@@ -114,7 +114,7 @@
 String join is an important operation in databases, data integration
 and data cleansing that finds string pairs from
 two collections of strings according to join predicates. This paper investigates a novel challenge to integrate taxonomy information into string joins. In particular, it presents a general-purpose strategy to improve the accuracy of string joins by enriching data with semantics-based knowledge provided by a
-taxonomy (i.e., a set of is-a hierarchies) built over data items. 
+taxonomy (i.e., a set of is-a hierarchies) built over data items.
 
 
 We propose efficient algorithms to answer similarity join queries with taxonomy.
@@ -149,7 +149,7 @@ Strings form a fundamental data type in computer systems and string searching ha
 inception of computer science. String similarity search takes a set of strings and a query string as input, and outputs all
 the strings in the set that are similar to the query string. A join extends the notion of similarity search further and require
 all similar string pairs between two input string sets to be reported. Both similarity search and similarity join are
-central to many applications such as data integration and cleaning. 
+central to many applications such as data integration and cleaning.
 
  Taxonomies are sets of is-a hierarchies, which allow aggregating low level data items into higher level concepts. For instance, they found application in (i) mining recurrent high level associations among data as well as their temporal changes [9], [10], [11] and [12], (ii) discovering flipping correlations, i.e., patterns whose correlation flips positive to negative (or vice versa) when generalizing data items at higher abstraction levels [13], and (iii) performing social data disambiguation and analysis [14], [15], [16] and [17]. However, to the best of our knowledge, the integration of taxonomy information in data used for classifier training has never been investigated so far.
 
@@ -359,7 +359,7 @@ Label the documents, and perform the joins.
 \begin{figure}[t]
 \centering
 \includegraphics[scale=0.4]{figures/labeljoins}
- \caption{An example of taxonomy with labels}
+ \caption{Join inverted lists}
 \label{fig:taxonomy}
 \end{figure}
 
@@ -385,14 +385,13 @@ Label the documents, and perform the joins.
 %\label{alg:measure}
 %\end{algorithm}
 
-\subsection{Taxonomy graph pattern}
+\subsection{Join algorithms}
 
-\begin{figure}[t]
-\centering
-\includegraphics[scale=0.5]{figures/tgsql}
- \caption{Taxonomy graph example }
-\label{fig:taxonomy}
-\end{figure}
+The key to an efficient, uniform mechanism for set-at-atime
+(join-based) matching of query graph patterns is a positional
+representation of occurrences of  elements and in the taxonomy database (see, e.g., [6, 7, 27]),
+which extends the classic inverted index data structure in information retrieval [22]. We borrow the labeling scheme from XML databases and use the prefix based labels. Structural relationships between tree nodes whose positions
+are recorded in this fashion can be determined easily for hypernym or hyponym relationships.
 
 There are two kinds of edges in a graph pattern, ``$\rightarrow$'' and ``$\leftarrow$''shows the IS-A relationship, hypernym and hyponym and ``$\leftrightarrows$'' is a mixedISA relationship.
 
@@ -406,117 +405,6 @@ database that satisfy any given node predicate $q$, and
 return a stream of matches $T_q$ based on the taxonomy.
 
 
-Given a taxonomy graph pattern Q and an taxonomy database D, a
-match of Q in D is identified by a mapping from nodes in Q
-to nodes in D, such that: (i) query node predicates are satisfied
-by the corresponding database nodes, and (ii) the structural (hypernym, hyponym and
-mixed) relationships between query nodes are
-satisfied by the corresponding database nodes. The answer
-to query Q with n nodes can be represented as an n-ary relation
-where each tuple ($d_1$,..., $d_n$) consists of the database
-nodes that identify a distinct match of Q in D.
-
-Given the results from taxonomy graph pattern matching, we can perform a Cartesian product to get the final results for the string joins.
-
-\subsection{Pattern matching algorithms}
-
-\subsubsection{Representation of nodes in taxonomy databases}
-
-The key to an efficient, uniform mechanism for set-at-atime
-(join-based) matching of query graph patterns is a positional
-representation of occurrences of  elements and in the taxonomy database (see, e.g., [6, 7, 27]),
-which extends the classic inverted index data structure in information retrieval [22]. We borrow the labeling scheme from XML databases and use the prefix based labels. Structural relationships between tree nodes whose positions
-are recorded in this fashion can be determined easily for hypernym or hyponym relationships.
-
-\subsubsection{Notations}
-
-Let q (with or without subscripts) denote graph patterns.
-In our algorithms, we make use of the following twig node
-operations: isLeaf: Node $\rightarrow$ boolean , isRoot: Node $\rightarrow$  boolean,
-parent: Node $\rightarrow$ Node, children: Node $\rightarrow$ \{Node\}, and
-subtreeNodes: Node $\rightarrow$ \{Node\}. Path queries have only
-one child per node, otherwise adjacent(q) returns the set
-of adjacent nodes of q.
-
-Associated with each node $q$ in a query graph pattern there
-is a list $T_q$. The stream contains the positional representations
-of the database nodes that match the node predicate
-at the graph pattern node q. The
-nodes in the stream are sorted by their prefix label. The operations over streams are: eof, advance,
-next, nextL, and nextR.
-
-\subsubsection{TGMatch Algorithm}
-
-Algorithm TGMatch, which computes answers to a query
-graph pattern, is presented in Figure 8.
-
-Algorithm TGMatch operates in two phases. In the first
-phase (lines 1-11), some (but not all) solutions to individual
-query root-to-leaf paths are computed. In the second phase
-(line 12), these solutions are merge-joined to compute the
-answers to the query graph pattern and then the final answers are computed with Cartesian product of record IDs.
-
- Before a node $h_q$ from the list $T_q$ is
-pushed on its stack $S_q$, TGMatch (via its call to getNext)
-ensures that: (i) node $h_q$ has a descendant hq in each
-of the streams Tq, for $q_i$ $\in$ adjacent($q$), and (ii) each of
-the nodes hq recursively satisfies the first property.  Thus, when the query graph pattern has only
-ancestor-descendant edges, each solution to each individual
-query root-to-leaf path is guaranteed to be merge-joinable
-with at least one solution to each of the other root-to-leaf
-paths. This ensures that no intermediate solution is larger
-than the final answer to the query twig pattern.
-
-The second merge-join phase of Algorithm TGMatch is
-linear in the sum of its input (the solutions to individual
-root-to-leaf paths) and output (the answer to the query graph
-pattern) sizes, only when the inputs are in sorted order of the
-common prefixes of the different query root-to-leaf paths.
-This requires that the solutions to individual query paths
-be output in root-to-leaf order as well, which necessitates
-blocking; showSolutions (from Figure 5), which outputs
-solutions in sorted leaf-to-root order, cannot be used.
-
-\subsubsection{Analysis of TGMatch}
-
- We discuss the correctness of algorithm TGMatch for processing string joins with taxonomy, and then we analyze its complexity.
-
- \begin{definition}[minimal descendant extension] Consider a pattern query Q. For each node
-q $\in$ scope(Q) we define the head of $q$, denoted $h_q$,
-as the first element in $T_q$ that participates in a solution for
-the sub-query rooted at $q$. We say that a node q has a minimal
-descendant extension if there is a solution for the subquery
-rooted at q composed entirely of the head elements of
-subtreeNodes ($q$).
-\end{definition}
-
-\smallskip
-
-\begin{theorem}
- Given a query graph pattern g and a taxonomy
-database D, Algorithm TGMatch correctly returns all answers
-for g on D.
-\end{theorem}
-
-While correctness holds for query graph patterns, we can prove
-optimality. The intuition is simple.
-Since we push into the stacks only elements that have both
-a descendant and an ancestor extension, we are guaranteed
-that no element that does not participate in any solution is
-pushed into any stack. Therefore, the merge postprocessing
-step is optimal, and we have the following result.
-
-
-\begin{theorem}
- Consider a query graph pattern g with n
-nodes, and only ancestor-descendant edges, and a taxonomy
-database D. Algorithm TGMatch has worst-case I/O and
-CPU time complexities linear in the sum of sizes of the
-n input lists and the output list. Further, the worst-case
-space complexity of Algorithm  TGMatch is the minimum
-of (i) the sum of sizes of the n input lists, and (ii) n times
-the maximum length of a root-to-leaf path in D.
-\end{theorem}
 
 \section{String similarity joins with taxonomy}
 
@@ -557,12 +445,12 @@ TS(S_1,S_2)=  \frac{(S_1 \bigcap_T S_2) \bigcup (S_1 \bigcap S_2) }{S_1 \bigcup 
 
 \subsubsection{Graph pattern with similarity thresholds}
 
-\begin{figure}[t]
-\centering
-\includegraphics[scale=0.4]{figures/tgsql2}
- \caption{Taxonomy graph example }
-\label{fig:similaritygeaph}
-\end{figure}
+%\begin{figure}[t]
+%\centering
+%\includegraphics[scale=0.4]{figures/tgsql2}
+% \caption{Taxonomy graph example }
+%\label{fig:similaritygeaph}
+%\end{figure}
 
 See Figure \ref{fig:similaritygeaph} for an example of similarity graph to perform similarity joins.
 
