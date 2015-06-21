@@ -271,6 +271,16 @@ Jiang et al. [15] experimentally evaluate and analyze many of
 the existing similarity join algorithms.
 
 
+$\mathbf{Prefix filter.}$ Since the prefix
+filter is effective, many methods are proposed to optimize it
+for different similarity operators [6,16,20,24,26,28,29]. ED-
+join [12,28] proposed a location-based mismatch filter to re-
+duce prefix length and a content-based mismatch filter to
+reduce the number of candidates for ED. Pivotal prefix filter [4] reduced the prex length for ED. PassJoin [17] pro-
+posed segment filter to improve pruning power. PPJoin [29]
+used the positions of prefix and suffix to improve pruning
+power for token-based similarities. Length filter was pro-
+posed to prune dissimilar answers based on length difference [8]. TrieJoin [23] used a different framework that directly computed real similarity using the trie structure.
 
 \section{Preliminaries} \label{sec:preliminaries}
 
@@ -450,7 +460,7 @@ TS(S_1,S_2)=  \frac{(S_1 \bigcap_T S_2) \bigcup (S_1 \bigcap S_2) }{S_1 \bigcup 
 %\label{fig:similaritygeaph}
 %\end{figure}
 
-See Figure \ref{fig:similaritygeaph} for an example of similarity graph to perform similarity joins.
+
 
 \textbf{Baseline algorithm}. We can use the similar algorithm as that in string exact join with taxonomy. And then use these candidate for filtering. But this baseline algorithm has one limitation that there are too many candidates. Then we show how to perform the second filtering to reduce the number of candidate pairs.
 
@@ -473,25 +483,25 @@ tokens of $s$ and the first $\lceil(1-\theta)|t|\rceil$ smallest
 tokens of $t$  must share at least one token.
 \end{lem}
 
-\subsubsection{Bloom matrix}
-
-We develop a new bloom matrix to extend the bloom filtering to quickly decide if there are any possibility that two sets of collections can produce at least one matching pair.
-
-There are three conditions
-
-(1) There are no overlapping for non-taxonomy bloom matrixes.
-
-(2) No taxonomy relationships and no signature bloom filter with taxonomy tokens.
-
-(3) Length filtering for those taxonomy strings.
-
-If (1) and (3) OR (1) and (2) are satisfied, then there are no any solution. We can quickly skip the join for those two collections. Otherwise we need to go into the collection and use the following algorithm to find the join solutions.
-
-
-\subsubsection{N-tuple signature filtering}
+%\subsubsection{Bloom matrix}
+%
+%We develop a new bloom matrix to extend the bloom filtering to quickly decide if there are any possibility that two sets of collections can produce at least one matching pair.
+%
+%There are three conditions
+%
+%(1) There are no overlapping for non-taxonomy bloom matrixes.
+%
+%(2) No taxonomy relationships and no signature bloom filter with taxonomy tokens.
+%
+%(3) Length filtering for those taxonomy strings.
+%
+%If (1) and (3) OR (1) and (2) are satisfied, then there are no any solution. We can quickly skip the join for those two collections. Otherwise we need to go into the collection and use the following algorithm to find the join solutions.
 
 
-Given a string s=\{A,B,C,D,E\}. If we use the prefix filtering, then the signature is A and B. Assume that $\theta$=0.75, (1-0.75)*5=1.25 and $\lceil 1.25 \rceil$=2. But in our bi-tuple scheme, we select two tokens as the signatures, including \{A,B\},\{A,C\},\{B,C\}. 
+\subsubsection{Composite signature filtering}
+
+
+Given a string s=\{A,B,C,D,E\}. If we use the prefix filtering, then the signature is A and B. Assume that $\theta$=0.75, (1-0.75)*5=1.25 and $\lceil 1.25 \rceil$=2. But in our bi-tuple scheme, we select two tokens as the signatures, including \{A,B\},\{A,C\},\{B,C\}.
 
 Similarly, we can develop a 3-tuple signature. we select three tokens as the signatures, including $\binom{4}{3}$=4, i.e. \{A,B,C\}, \{A,C,D\}, \{B,C,D\}, \{A,B,D\}.
 
@@ -499,9 +509,23 @@ Furthermore, we can extend to 4-tuple signature, that is $\binom{5}{4}$=4, i.e. 
 
 One question is how to select the number $n$ for n-tuple scheme. What is the optimal value of $n$?
 
-Given strings which do not contain enough non-taxonomy signature tokens, we need some special processing.
+Given a string s with length $|s|$, assume that we use n-tuple signature, and the similarity threshold is $\theta$.
 
-Assume that a string $s$ has $v_1$ in the taxonomy tree, then all strings which have not the taxonomy relationships with $v_1$ should have the overlapping prefix signature with $s$, therefore we can impose the prefix i=filtering again, but the number of prefix should be revisited. In addition, for string which has the taxonomy relationship with $v_1$, then we can only apply the length filtering.
+Then the number of signature is  $\binom{(1-\theta)|s|+n-1}{n}$ = $O(((1-\theta)|s|+n-1)^{n})$
+
+Let $t= (1-\theta)|s|$, that is, $O((t+n-1)^{n})$. If n is too large, then there are many signatures, it may not be an optimal solution. Therefore, the key point is how to decide a good $n$?
+
+\smallskip
+
+\noindent \textbf{Composite signatures.} That means, the signatures may contain both TG IDs and tokens. We describe our methods as follows:
+
+ Given a string s=\{A,B,C,D,E\}, assume that we use 3-tuple signature, $\binom{4}{3}$=4, i.e. \{A,B,C\}, \{A,C,D\}, \{B,C,D\}, \{A,B,D\}.
+
+For each tokens, there are two cases, that is, it contains a taxonomy word, say $t \in w$. Then we use $w$ to replace $t$. Note that $t$ may belong to multiple taxonomy words. Therefore, ($w_1, w_2, \cdots, w_3$)
+
+Continue the above example, assume that $AB$ = 1.1, $BE$= 2.3. Note that $E \in s $, but $E$ does not belong to the signatures. Then the new four signatures: \{A,B,C\}, \{1.1,C\}, \{2.3,A,C\}, \{A,C,D\}, \{1.1,C,D\},\{B,C,D\},  \{2.3,C,D\}, \{A,B,D\}, \{1.1,D\}, \{2.3,A,D\}.
+
+
 
 %For strings which do not contain any non-taxonomy words, we propose a bipartite grouping index. The main idea is to separate the strings to several groups and for different groups, there is no need to compare the strings.
 %There are also methods that exploit triangle inequality to support edit distance-based similarity queries [27]. Edit distances of every data string to pre-chosen reference strings are precomputed, and used by the query processing algorithm to filter non-promising data strings based on the triangle inequality. Several issues regarding judicious selection of reference objects are studied in [27]. Alternatively, existing metric indexes [36] can be used for query processing too. As this line of methods is applicable to any metric distance, they cannot attain ultra fast performance. But in this paper, we select multiple groups and therefore we can obtain better performance.
@@ -571,119 +595,6 @@ ordering. The minimum is then added back at query time.
 Figure~\ref{tab:data_characteristics} gives the characteristics of the
 three datasets.
 
-
-\subsection{Space}
-
-We evaluate the compactness of the data structures by
-reporting in Table 1 the average number of bits per string
-(including score). For comparison, we also report the size
-of the original uncompressed text file (Raw) and the gzip
-compressed binary (GZip). Across the 4 datasets, the three
-presented techniques achieve an average compression ratio
-of between 29\% and 51\%, with SDT consistently having the
-smallest size. In fact, its size is only 3\% larger than that
-achieved by gzip compression on average, and is actually
-10\% smaller on the Unigrams datatset.
-
-
-
-To better understand how the space is used, we present
-in Figure 8 the storage breakdown of each of the techniques
-on QueriesA. For CT, 70  the space is used to store the
-uncompressed character sequences. Compressing the node
-character sequences with RePair [22] can further reduce the
-size, but will incur some sacrifice in speed. With delta encoding,
-storing the scores, including the 2 bit header, takes
-only 4.0 and 9.6 bits per node and string, respectively. In
-comparison, standard variable-byte encoding with a single
-continuation bit [38] requires at least 8 bits per node. Similarly,
-we utilize an average of only 16.4 bits per string in the
-dataset to encode the tree structure. As reference, it would
-have required 24 bits just to encode the index of a string.
-
-\subsection{Time}
-
-To evaluate the runtime performance of the proposed data
-structures, we synthesize a sequence of completion requests
-to simulate an actual server workload. Specifically, we first
-sample 1M queries in random order from the dataset according
-to the normalized scores. Assuming that user queries
-arrive according to a Poisson process, we can model the interarrival
-time of each query using an exponential distribution.
-We can control the average queries per second (QPS) by
-adjusting the  parameter of the exponential distribution.
-For simplicity, we assume that each subsequent keystroke
-arrives 0.3 seconds apart, corresponding to an average typing
-speed of 40 word per minutes. Users will continue to enter
-additional keys until the target query appears as the top
-suggestion, or until the query has been fully entered. Note
-that with higher QPS, requests from different queries are
-more likely to overlap, leading to more cache misses.
-In Table 2, we present the mean time to compute the top-10
-completions, averaged over 10 runs. Overall, CT achieves the
-best performance, about twice as fast as SDT. While much
-of the differences can be attributed to SDT's use of succinct
-operations for trie traversal and RePair decoding of label
-sequence L, CT's better memory locality, where all node
-information are stored together, still plays an important
-part. For instance, we see that when the nodes are not
-arranged for locality, as is the case for RT, the performance
-is extremely poor. Similarly, as the requests corresponding
-to higher QPS exhibit less overlap in memory access, the
-performance degrades by an average of 10\% for CT and 21\%
-for SDT. As the prefixes used by the two workloads differ only
-in order, the performance gap is due entirely to the effect
-of CPU cache, where CT shines. To simulate a moderate
-workload, we use 1K QPS in the remaining analyses.
-
-
-To better understand the performance differences between
-the techniques, we break down the total time to compute the
-top-10 completions on QueriesA into the time spent finding
-the locus node and computing each successive completion.
-As shown in Figure 9, CT using pointer arithmetic is significantly faster than data structures using balanced parentheses
-for traversal, especially in finding the initial locus node. Theoretically,
-the cost of retrieving each additional completion
-increases logarithmically. But in practice, the incremental
-cost for both CT and SDT remains mostly constant (not
-shown), as it is dominated by memory access time, with
-decreasing probability of cache miss for each additional completion.
-In fact, for RT, it actually takes less time to compute
-each additional completion. Furthermore, although we are
-also returning the completion string, each completion in SDT
-is about twice as fast as a random Access operation. CT has
-an even larger ratio due to its less efficient Access operation.
-Thus, by integrating string construction into the completion
-algorithm, we significantly reduce the overall time required to
-enumerate the top-k completions.
-
-\subsection{Scalability}
-
-To assess the scalability of the data structures, we compare
-their performance on different size subsets of the QueriesB
-dataset. Specifically, to mimic practical scenarios where we
-have a limited memory budget and can only accord to serve
-the most popular queries, we will generate these subsets by
-taking the top-N distinct queries in decreasing score order.
-Figure 10 plots the change in average bytes per query as we
-increase the number of queries. Overall, we see that lower
-count tail queries are longer and require more space across all
-techniques, likely due to the different characteristics exhibited
-by queries with only a few counts. While SDT requires more
-space than CT below 100 queries due to its large sublinear
-overhead, its size continues to fall with increasing number of
-queries and actually becomes smaller than GZip on a wide
-range of dataset sizes.
-We present in Figure 11 the effect the number of queries
-has on the average time per completion for top-10 completion
-requests. We use the synthesized workload based on the full
-QueriesB dataset to best approximate real world usage scenarios
-where users enter prexes without knowing what queries
-the system can complete. Thus, both the average number of
-completions and average completion length increase with the
-dataset size. As shown, the average time per completion for
-CT increases very slowly, due to increasing completion length
-and more cache misses. It is higher for smaller datasets as
 
 
 
