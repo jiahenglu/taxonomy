@@ -531,7 +531,27 @@ Continue the above example, assume that $AB$ = 1.1, $BE$= 2.3. Note that $E \in 
 %There are also methods that exploit triangle inequality to support edit distance-based similarity queries [27]. Edit distances of every data string to pre-chosen reference strings are precomputed, and used by the query processing algorithm to filter non-promising data strings based on the triangle inequality. Several issues regarding judicious selection of reference objects are studied in [27]. Alternatively, existing metric indexes [36] can be used for query processing too. As this line of methods is applicable to any metric distance, they cannot attain ultra fast performance. But in this paper, we select multiple groups and therefore we can obtain better performance.
 %Multiple reference points, and therefore we can prune away strings by those multiple reference points.
 
+\subsection{Count-Min estimation}
 
+In order to quickly decide if the number of pairs after composite filters, we develop a count-min estimation to quickly determine which $n$ is good for filtering. See the following two examples for joins. 
+
+See the example in Figure \ref{fig:signature_example1}. In this example, $\theta$ = 0.8. If we use the 1-element signature, then we cannot prune away any string pair. In signature 2, we use 2-element signature, then there is no candidate. Therefore, the filtering power is better.
+
+Further, when we consider the taxonomy ABCD ISA AGK, shown in Figure \ref{fig:signature_example1}. Then there is one answer pair (s1,t1). The new signature include the taxonomy ID 1.1 and 1  as shown.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.8]{figures/signature_example1}
+ \caption{Illustration to the difference of signature schemes}
+\label{fig:signature_example1}
+\end{figure}
+
+A Count-Min (CM) sketch with parameters ( $\varepsilon, \delta$) is represented by a two-dimensional
+array counts with width $w$ and depth $d$. Given parameters ($\varepsilon, \delta$), set
+$w$ = $\lceil \frac{e}{\varepsilon} \rceil$ and $d$ = $\lceil ln \frac{1}{\delta} \rceil $. Each entry of the array is initially zero.
+
+
+When a data item ($w,i$) arrives, meaning that the signature $w$ has the length $i$, then $i$ is added to one cell in each row; the counter is determined by $h_j$. Formally, set $\forall 1 \leq j \leq d$, then count[j,$h_j(i)$]   
 
 \section{Experimental analysis}
 
