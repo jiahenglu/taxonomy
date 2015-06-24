@@ -1,0 +1,78 @@
+\section{Related work} \label{sec:relatedwork}
+
+Taxonomy is the practice and science of classification. Many taxonomies have a hierarchical structure, but this is not a requirement. In this work, we study to leverage the existing taxonomy to improve the accuracy of string record join in databases. Such a taxonomy could be constructed manually
+through experts and community efforts, as in WordNet
+[4], Cyc [14], and Freebase. With the advantage of freshness
+and informativeness, automatic taxonomy construction has
+been extensively studied recently, for example, in [20, 22,
+18, 21, 26]. WikiTaxonomy [18] and YAGO [22] may be the
+most notable efforts, which attempt to derive a taxonomy
+from Wikipedia categories. With more web data, Probase
+[26] aims at building a unified taxonomy of worldly facts.
+
+
+ The contributions of this paper \cite{journals/vldb/MartinenghiT14}   are the following: a simple but solid framework for embedding taxonomies
+into relational databases. 
+
+
+
+
+Several types of Similarity Join have been proposed in the
+literature, e.g., distance range join (retrieves all pairs whose distances
+are smaller than a predefined threshold $\varepsilon$) [2, 3, 4, 5, 6,
+7], k-Distance join (retrieves the k most-similar pairs) [8], and
+kNN-join (retrieves, for each tuple in one table, the k nearest neighbors
+in another table) [9, 10, 11]. The distance range join
+has been one of the most studied and useful types of Similarity
+Join. This type of join is commonly referred to simply as Similarity
+Join and is the focus of this paper. Among its most relevant
+implementation techniques, we find approaches that rely
+on the use of pre-built indices, e.g., eD-index [3], D-index [4],
+and List of Twin Clusters (LTC) [12]. These techniques strive
+to partition the data while clustering together the similar objects.
+While these indexing techniques support the SJ operation
+they also have some shortcomings: D-index and eD-index may
+require rebuilding the index to support queries with different $\varepsilon$,
+
+Approximate string matching includes finding (sub)strings
+that resemble a given query string. It is a well-researched
+topic and has many applications, such as data cleansing [1],
+spelling correction [19], query autocompletion [33], near duplicate
+detection [25, 32], approximate named entity recognition
+[29], and bioinformatics [20, 27, 35].
+Due to the sheer amount of literature in this area, we will
+focus on most related recent results and refer readers to the
+excellent surveys [13, 22] and tutorials [3, 12, 16] for a comprehensive
+treatment of the topic.
+Based on the types of the queries, recent work focuses either
+on efficient single query processing (typically named string
+similarity queries) [1, 6, 9, 11, 18, 25, 28, 31], or the similarity
+join which can be treated as processing a batch of similarity
+queries [2, 8, 10, 12, 14, 17, 28, 29, 34, 35]. Most recently,
+Jiang et al. [15] experimentally evaluate and analyze many of
+the existing similarity join algorithms.
+
+
+$\mathbf{Prefix filter.}$ Since the prefix
+filter is effective, many methods are proposed to optimize it
+for different similarity operators [6,16,20,24,26,28,29]. ED-
+join [12,28] proposed a location-based mismatch filter to re-
+duce prefix length and a content-based mismatch filter to
+reduce the number of candidates for ED. Pivotal prefix filter [4] reduced the prex length for ED. PassJoin [17] pro-
+posed segment filter to improve pruning power. PPJoin [29]
+used the positions of prefix and suffix to improve pruning
+power for token-based similarities. Length filter was pro-
+posed to prune dissimilar answers based on length difference [8]. TrieJoin [23] used a different framework that directly computed real similarity using the trie structure.
+
+\smallskip
+
+\noindent \textbf{Bucket histograms.}  The histogram is the most widely used form to store statistical information of the data distributions
+in a database. Many different histograms have been proposed in the literature and some have been deployed in commercial RDBMSs. However, almost all previous histograms have one thing in common: they all use buckets to partition the data, although in different ways.
+A bucket-based histogram approximates the data in an attribute of a relation by grouping attribute values into buckets and estimating the attribute values and their frequencies based on the summary statistics maintained in each bucket. More specifically, a histogram of an attribute is an approximation of the frequency distribution of the attribute values obtained as follows: The
+(attribute value, frequency) pairs of the distribution are partitioned into buckets; The frequency
+of each value in a bucket is approximated by the average of the frequencies of all values in the
+bucket; The set of values in a bucket is usually approximated in some compact fashion as well.
+
+The popular equi-depth histogram \cite{conf/sigmod/Piatetsky-ShapiroC84}  partitions the interval between the minimum and
+maximum attribute value of a column into consecutive subintervals so that the total frequency of
+the attribute values for each subinterval is the same. It is interesting to note that these two simple histograms (or their variants) are still used extensively in today¡¯s major commercial RDBMSs like Oracle, Informix, Microsoft SQL Server, Sybase, and Ingres.

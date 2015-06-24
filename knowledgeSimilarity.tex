@@ -111,15 +111,11 @@
 
 \begin{abstract}
 
-String join is an important operation in  data integration
-and data cleansing that find string pairs from
-two collections of strings according to join predicates. This paper investigates a novel challenge to integrate taxonomy information into string joins. For example, ``Helsinki'' and ``Finland'' have the IS-A relationship and can be treated as a matching pair.  In particular, the taxonomy presents a general-purpose strategy to improve the accuracy of string joins by enriching data with semantics-based knowledge  (i.e., a set of is-a hierarchies) built over data items.
+A string join finds all string pairs between two input string collections. It is an essential operation in
+many applications, such as databases, data integration and data cleansing. This paper investigates a novel challenge to integrate taxonomy information into string joins. In general, the taxonomy presents a general-purpose strategy to improve the accuracy of string joins by enriching data with semantics-based knowledge  (i.e., a set of is-a hierarchies). For example, two records about ``Helsinki'' and ``Finland'' may have closely semantic relationship, as Helsinki is the  capital and largest city of Finland.
 
-
-We propose efficient algorithms to answer similarity join queries with taxonomy.
-
-The extensive performance evaluation shows that the exact and approximate string joins utilize the taxonomy to improve the effectiveness of joins  and scales very well when important parameters like  data size, and number of dimensions increase.
-
+This work presents a solution for answering similarity join queries with taxonomy. We first study string join which specifies the exact the IS-A relationship between strings. Then we study the similarity string joins. We develop a new similarity measure with taxonomy. Then we propose new similarity join algorithms. We propose a new composite signatures. In order to optimize the processing, the key step is to decide a parameter $n$. Then we extend the count-min sketch to develop an estimation algorithm. This estimator provides strong low-error, high-confidence guarantees while requiring only logarithmic space and time costs,
+thus making our method attractive both in theory and in practice. Finally, the extensive performance evaluation shows that the exact and approximate string joins utilize the taxonomy to improve the effectiveness of joins  and scales very well when important parameters like  data size, and number of dimensions increase.
 
 \end{abstract}
 
@@ -131,230 +127,22 @@ The extensive performance evaluation shows that the exact and approximate string
 
 %\keywords{keyword search, package search, top-$k$ querying}
 
+\input{introduction}
 
-\section{Introduction}
+\input{relatedwork}
 
-
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.45\textwidth]{figures/productexample}
- \caption{Examples to illustrate approximate joins}
-\label{fig:autocompletion}
-\end{figure}
-
-
-Strings form a fundamental data type in computer systems and string searching has been extensively studied since the
-inception of computer science. String similarity search takes a set of strings and a query string as input, and outputs all
-the strings in the set that are similar to the query string. A join extends the notion of similarity search further and require
-all similar string pairs between two input string sets to be reported. Both similarity search and similarity join are
-central to many applications such as data integration and cleaning.
-
- Taxonomies are sets of is-a hierarchies, which allow aggregating low level data items into higher level concepts. For instance, they found application in (i) mining recurrent high level associations among data as well as their temporal changes [9], [10], [11] and [12], (ii) discovering flipping correlations, i.e., patterns whose correlation flips positive to negative (or vice versa) when generalizing data items at higher abstraction levels [13], and (iii) performing social data disambiguation and analysis [14], [15], [16] and [17]. However, to the best of our knowledge, the integration of taxonomy information in data used for classifier training has never been investigated so far.
-
-
-
-
-Given two strings, $s_1$ and $s_2$, we return three possible relationships between $s_1$ and $s_2$: hypernym, hyponym, mixed. For example, ``California, U.S.'' is a hyponym of ``U.S.'', ``Egypt'' is the same as ``Egypt, Africa Northern'' and ``Egypt'' is a hypernym of ``Africa''. For more examples: ``Egypt, Algeria'' is a hyponym of ``Africa Northern''.
-
-There are two related problems: string join with taxonomy and string similarity join with taxonomy
-
-The leave behind two intriguing questions:
-
-1. How to efficient process string joins with taxonomy? And for multiple joins.
-
-
-2. How to process the similarity joins and multiple-way similarity joins?  This question becomes increasingly urgent nowadays with the arrival of big data.
-
-%\begin{problem}(String measure with taxonomy). Given two strings $s_1$ and $s_2$ and a taxonomy $T$, how to measure the similarity between $s_1$ and $s_2$ based on T?
-%\end{problem}
-%\begin{problem}(String joins with taxonomy). Given a string $p$$\in$
-%$\Sigma^*$, an integer k, and a synonym set $\mathbb{R}$,  .
-%\end{problem}
-
-
-
-
-\subsection{Novelty and contributions}
-
-
-\smallskip
-
-
-Our contributions are as follows.
-
-\noindent \textbf{Introduction of string joins with taxonomy}. We introduce a new problem to utilize the taxonomy for the string joins in databases, which has application in data integration and data cleansing.
-
-\noindent \textbf{Optimal algorithms for string joins} We introduce a holistic algorithm for multiple string joins.
-
-\noindent \textbf{Introduction of approximate string joins with taxonomy}: Provide three relationships Hyper, Hypo and mixed similarity.
-
-\noindent \textbf{Novel algorithms for approximate string joins}
-
-
-Finally, we perform experiments to evaluate our results and show the benefits of proposal algorithms.
-
-
-\smallskip
-
-The rest of this paper is organized as follows. Section 2
-provides the necessary definitions, formulates . Section
-3 includes our solution to JRA. In Section 4, we study
-the general case of WGRAP, by reviewing the greedy algorithm
-of [22], proposing our solution, analyzing its approximation
-ratio, and presenting our similarity join algorithms.
-Our experiments are presented in Section 5. Finally,
-Section 6 concludes with a discussion about future work.
-
-
-\section{Related work} \label{sec:relatedwork}
-
-Techniques introduced in this work take a taxonomy in the
-input to optimize the index structure and to process taxonomy
-queries. Such a taxonomy could be constructed manually
-through experts and community efforts, as in WordNet
-[4], Cyc [14], and Freebase. With the advantage of freshness
-and informativeness, automatic taxonomy construction has
-been extensively studied recently, for example, in [20, 22,
-18, 21, 26]. WikiTaxonomy [18] and YAGO [22] may be the
-most notable efforts, which attempt to derive a taxonomy
-from Wikipedia categories. With more web data, Probase
-[26] aims at building a unified taxonomy of worldly facts.
-
-There is a vast literature on ranked retrieval, both in the
-classical and succinct settings. We report here the results
-closest to our work.
-
-
- The contributions of this paper \cite{journals/vldb/MartinenghiT14}   are the following: a simple but solid framework for embedding taxonomies
-into relational databases. A simple but powerful algebraic language for supporting
-query relaxation: This language makes it possible to formulate, in a procedural way, complex searches over vague schemas in different application domains; a declarative, logic-based language for supporting query
-relaxation: This language provides a basis for an extension
-of SQL able to exploit taxonomies for expressing relaxed
-queries over relational data;
-
-
-
-Several types of Similarity Join have been proposed in the
-literature, e.g., distance range join (retrieves all pairs whose distances
-are smaller than a predefined threshold $\varepsilon$) [2, 3, 4, 5, 6,
-7], k-Distance join (retrieves the k most-similar pairs) [8], and
-kNN-join (retrieves, for each tuple in one table, the k nearest neighbors
-in another table) [9, 10, 11]. The distance range join
-has been one of the most studied and useful types of Similarity
-Join. This type of join is commonly referred to simply as Similarity
-Join and is the focus of this paper. Among its most relevant
-implementation techniques, we find approaches that rely
-on the use of pre-built indices, e.g., eD-index [3], D-index [4],
-and List of Twin Clusters (LTC) [12]. These techniques strive
-to partition the data while clustering together the similar objects.
-While these indexing techniques support the SJ operation
-they also have some shortcomings: D-index and eD-index may
-require rebuilding the index to support queries with different $\varepsilon$,
-
-Approximate string matching includes finding (sub)strings
-that resemble a given query string. It is a well-researched
-topic and has many applications, such as data cleansing [1],
-spelling correction [19], query autocompletion [33], near duplicate
-detection [25, 32], approximate named entity recognition
-[29], and bioinformatics [20, 27, 35].
-Due to the sheer amount of literature in this area, we will
-focus on most related recent results and refer readers to the
-excellent surveys [13, 22] and tutorials [3, 12, 16] for a comprehensive
-treatment of the topic.
-Based on the types of the queries, recent work focuses either
-on efficient single query processing (typically named string
-similarity queries) [1, 6, 9, 11, 18, 25, 28, 31], or the similarity
-join which can be treated as processing a batch of similarity
-queries [2, 8, 10, 12, 14, 17, 28, 29, 34, 35]. Most recently,
-Jiang et al. [15] experimentally evaluate and analyze many of
-the existing similarity join algorithms.
-
-
-$\mathbf{Prefix filter.}$ Since the prefix
-filter is effective, many methods are proposed to optimize it
-for different similarity operators [6,16,20,24,26,28,29]. ED-
-join [12,28] proposed a location-based mismatch filter to re-
-duce prefix length and a content-based mismatch filter to
-reduce the number of candidates for ED. Pivotal prefix filter [4] reduced the prex length for ED. PassJoin [17] pro-
-posed segment filter to improve pruning power. PPJoin [29]
-used the positions of prefix and suffix to improve pruning
-power for token-based similarities. Length filter was pro-
-posed to prune dissimilar answers based on length difference [8]. TrieJoin [23] used a different framework that directly computed real similarity using the trie structure.
-
-\section{Preliminaries} \label{sec:preliminaries}
-
-
-
-In this section, we first  define taxonomy, including
-hypernym and hyponym. Subsequently,
-we discuss challenges of processing taxonomy-based approximate string joins.
-
-
-\subsection{Taxonomy}
-
-A taxonomy (T ,$\sqsubseteq$ ) consists of a universe of terms T and
-a term-term hypernym-hyponym relationship $\sqsubseteq$.
-
-Hypernym-hyponym relationship. The hypernym-hyponym relationship
-$\sqsubseteq$ is a partial order T . For two terms t1 and t2,
-we write t1 $\sqsubseteq$ t2 or t2 $\sqsupseteq$ t1, if t1 is a hypernym of t2 (or t2
-is a hyponym of t1). For example, ``Caribbean Region'' is a hyponym of
-``Americas''. Figure  \ref{fig:taxonomy} shows an example of taxonomy for geological locations.
-
-
-
-Hyponymy shows the relationship between the more general terms (hypernyms) and the more specific instances of it (hyponyms). A hyponym is a word or phrase whose semantic field is more specific than its hypernym. The semantic field of a hypernym, also known as a superordinate, is broader than that of a hyponym. An approach to the relationship between hyponyms and hypernyms is to view a hypernym as consisting of hyponyms. This, however, becomes more difficult with abstract words such as imagine, understand and knowledge. While hyponyms are typically used to refer to nouns, it can also be used on other parts of speech. Like nouns, hyponyms in verbs are words that refer to a broad category of actions. For example, verbs such as stare, gaze, view and peer can also be considered hyponyms of the verb look.
-Hypernyms and hyponyms are asymmetric. Hyponymy can be tested by substituting X and Y in the sentence ``X is a kind of Y'' and determining if it makes sense.[4] For example, ``A screwdriver is a kind of tool''  makes sense but not ``A tool is a kind of screwdriver''.
-
-
-Hyponymy is a transitive relation, if X is a hyponym of Y, and Y is a hyponym of Z, then X is a hyponym of Z.[5] For example, violet is a hyponym of purple and purple is a hyponym of color; therefore violet is a hyponym of color. In addition, it should be noted that a word can be both a hypernym and a hyponym: for example purple is a hyponym of colour but itself is a hypernym of the broad spectrum of shades of purple between the range of crimson and violet.
-
-The hierarchical structure of semantic fields can be mostly seen in hyponymy. They could be observed from top to bottom, where the higher level is more general and the lower level is more specific. For example, living things will be the highest level followed by plants and animals, and the lowest level may comprise dog, cat and wolf.
-
-Under the relations of hyponymy and incompatibility, taxonomic hierarchical structures too can be formed. It consists of two relations; the first one being exemplified in 'An X is a Y' (simple hyponymy) while the second relation is 'An X is a kind/type of Y'. The second relation is said to be more discriminating and can be classified more specifically under the concept of taxonomy.
-
-Computer science often terms this relationship an ``is-a'' relationship. For example, the phrase ``Red is-a colour'' can be used to describe the hyponymic relationship between red and colour.
-
-Hyponymy is the most frequently encoded relation among synsets used in lexical databases such as WordNet. These semantic relations can also be used to compare semantic similarity by judging the distance between two synsets and to analyse Anaphora.
-
-As a hypernym can be understood as a more general word than its hyponym, the relation is used in semantic compression by generalization to reduce a level of specialization.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.45\textwidth]{figures/taxonomy}
- \caption{An example of taxonomy on ``\textsf{Geographic locations}''}
-\label{fig:taxonomy}
-\end{figure}
-
-Example extended SQL
-
-Select  T1.price, T2.price \\
-From Table T1 and T2 \\
-Where T1.area is\_a\_hypernym T2.area \\
-With taxonomy T \\
-
-
-The second SQL query:
-
-Select  T1.price, T2.price, T3.price \\
-From Table T1, T2, T3 \\
-Where T1.area is\_a\_hypernym T2.area AND T1.product is\_a\_hypernym T2.product
-
+\input{preliminaries}
 
 
 \section{String joins with taxonomy}
 
 We consider the exact joins including hypernymy and hyponymy and mixed three predicates based on taxonomy T.
 
-Assume that T can fit in the main memory, this join can be implemented.
+
 
 The baseline join algorithm is the nested-loop join. All string pairs are accessed to determine the hyper-hypo relationships. But this algorithm is obviously not efficient. Therefore, we propose an efficient algorithm.
 
 
-Indexed base join. New indexing methods?
-
-Label the documents, and perform the joins.
 
 \begin{figure}[t]
 \centering
@@ -394,6 +182,26 @@ Label the documents, and perform the joins.
 %\label{alg:measure}
 %\end{algorithm}
 
+
+\begin{algorithm}
+{\bf Input}: two sets of strings $S_1$ and $S_2$, a taxonomy $T$ \\
+{\bf Output}: string pairs $(s_1,s_2) \in S_1 \times S_2$ s.t. $s_1 \sqsubset s_2$ or $s_2 \sqsubset s_1$
+\begin{compactenum}[(1)]
+\item Let $G_s$ and $G_t$ denote the inverted lists for S and T respectively.
+\item Perform a join operation to find the IS-A relationship between $G_s$ and $G_t$
+\item {\bf FOR} EACH join pair ($t_1,t_2$)
+\item  $R = R \cup t_1.List \times t_2.List$
+\item $R$
+\end{compactenum}
+\caption{String joins with taxonomy}
+\label{alg:exactjoin}
+\end{algorithm}
+
+Note that the above algorithm may contain the duplicate result set. Therefore, we need to sort and remove the duplication.
+
+\begin{theorem}  Algorithm \ref{alg:exactjoin} is an optimal algorithm. The computing cost is linear to the sum of the size of the input and output. That is, each output result contribute to the final answer.
+\end{theorem}
+
 \subsection{Join algorithms}
 
 The key to an efficient, uniform mechanism for set-at-atime
@@ -413,145 +221,8 @@ for our purposes that there be efficient access mechanisms
 database that satisfy any given node predicate $q$, and
 return a stream of matches $T_q$ based on the taxonomy.
 
+\input{similarityjoins}
 
-
-\section{String similarity joins with taxonomy}
-
-
-We extend our definition to composite relation. For example: ''U.S and China'' is a composite hyponym of ``California and Beijing''. Another example: ``Hong Kong and California'' and ``U.S.''. This is a partial hypernym relation, since only California is a hypernym of U.S.
-
-The sort-merge algorithm cannot work here.
-
-Labeling scheme and the join:
-
-If there are more than one string, then we can perform the verification after the filtering.
-
-
- Therefore, we propose a labeling scheme to process. Convert it to the ancestor-descendant joins
-
-
-
-\subsection{Similarity measures}
-
-
-
-We define the taxonomy similarity between two strings:
-
-\begin{definition}[Taxonomy intersection]
-Given two token sets $S_1$ and $S_2$, and a taxonomy $\mathcal{T}$, we say an element (token) $e \in S_1 \bigcap_T S_2$ if one the following cases is satisfied:
-
-(1) $ e \in S_1$ (resp. $S_2$) and $\exists t \in S_2$ (resp. $S_1$), s.t. $(e,t) \in \mathcal{T} $, or
-
-(2) $ e \in S_1$, and $e$ is a token of $e'$, and every token $e''$ in $e$ is in the set $S_1$, s.t. $\exists (e',t) \in \mathcal{T}$.\end{definition}
-
-\begin{definition}[Taxonomy similarity]   Given two sets of tokens $S_1$ and $S_2$,we define the taxonomy similarity (TS) between $S_1$ and $S_2$ as follows:
-
-\begin{equation}
-TS(S_1,S_2)=  \frac{(S_1 \bigcap_T S_2) \bigcup (S_1 \bigcap S_2) }{S_1 \bigcup S_2}
-\end{equation} \end{definition}
-
-\subsection{String similarity join algorithms}
-
-
-%\begin{figure}[t]
-%\centering
-%\includegraphics[scale=0.4]{figures/tgsql2}
-% \caption{Taxonomy graph example }
-%\label{fig:similaritygeaph}
-%\end{figure}
-
-
-
-\textbf{Baseline algorithm}. We can use the similar algorithm as that in string exact join with taxonomy. And then use these candidate for filtering. But this baseline algorithm has one limitation that there are too many candidates. Then we show how to perform the second filtering to reduce the number of candidate pairs.
-
-\textbf{Signature-based index}. Given a string s with length $|s|$, then the size of signature is $\lceil (1-\theta)|s| \rceil$. But if the signatures involve the taxonomy, then we cannot make this argument.
-
-But if in some real cases, we select the word from taxonomy as signatures. Therefore we need to compute a relax maximum similarity. In this case, we still do not need to retrieve the whole string to compute real similarity.
-
-Given as string $s$, assume that its applied taxonomy node is $n$.
-
-In this paper, we propose a new index which combine a signature filters and a length together with a bit-matrix, which extends bloom filter to two dimensions.
-
-In the literature, the current "modus operandi" is called \textit{prefix filter}, which is based on the intuition that if two canonicalized records are similar, some fragments of them should overlap with each other, as otherwise the two records
-won't have enough overlap. This intuition can be formally captured by the prefix-filtering
-principle \cite{conf/icde/ChaudhuriGK06} rephrased below.
-
-\begin{lem} (\textsc{Prefix filter principle}) \cite{conf/icde/ChaudhuriGK06} Given an
-ordering $O$ of the token universe $U$ and two strings $s$ and $t$, each with tokens sorted in the
-order of $O$.   If Jaccard($s, t$) $\geq \theta$, then the first $\lceil(1-\theta)|s|\rceil$ smallest
-tokens of $s$ and the first $\lceil(1-\theta)|t|\rceil$ smallest
-tokens of $t$  must share at least one token.
-\end{lem}
-
-%\subsubsection{Bloom matrix}
-%
-%We develop a new bloom matrix to extend the bloom filtering to quickly decide if there are any possibility that two sets of collections can produce at least one matching pair.
-%
-%There are three conditions
-%
-%(1) There are no overlapping for non-taxonomy bloom matrixes.
-%
-%(2) No taxonomy relationships and no signature bloom filter with taxonomy tokens.
-%
-%(3) Length filtering for those taxonomy strings.
-%
-%If (1) and (3) OR (1) and (2) are satisfied, then there are no any solution. We can quickly skip the join for those two collections. Otherwise we need to go into the collection and use the following algorithm to find the join solutions.
-
-
-\subsubsection{Composite signature filtering}
-
-
-Given a string s=\{A,B,C,D,E\}. If we use the prefix filtering, then the signature is A and B. Assume that $\theta$=0.75, (1-0.75)*5=1.25 and $\lceil 1.25 \rceil$=2. But in our bi-tuple scheme, we select two tokens as the signatures, including \{A,B\},\{A,C\},\{B,C\}.
-
-Similarly, we can develop a 3-tuple signature. we select three tokens as the signatures, including $\binom{4}{3}$=4, i.e. \{A,B,C\}, \{A,C,D\}, \{B,C,D\}, \{A,B,D\}.
-
-Furthermore, we can extend to 4-tuple signature, that is $\binom{5}{4}$=4, i.e. \{A,B,C,D\}, \{A,C,D,E\}, \{A,B,D,E\}, \{A,C,D,E\}, \{B,C,D,E\}.
-
-One question is how to select the number $n$ for n-tuple scheme. What is the optimal value of $n$?
-
-Given a string s with length $|s|$, assume that we use n-tuple signature, and the similarity threshold is $\theta$.
-
-Then the number of signature is  $\binom{(1-\theta)|s|+n-1}{n}$ = $O(((1-\theta)|s|+n-1)^{n})$
-
-Let $t= (1-\theta)|s|$, that is, $O((t+n-1)^{n})$. If n is too large, then there are many signatures, it may not be an optimal solution. Therefore, the key point is how to decide a good $n$?
-
-\smallskip
-
-\noindent \textbf{Composite signatures.} That means, the signatures may contain both TG IDs and tokens. We describe our methods as follows:
-
- Given a string s=\{A,B,C,D,E\}, assume that we use 3-tuple signature, $\binom{4}{3}$=4, i.e. \{A,B,C\}, \{A,C,D\}, \{B,C,D\}, \{A,B,D\}.
-
-For each tokens, there are two cases, that is, it contains a taxonomy word, say $t \in w$. Then we use $w$ to replace $t$. Note that $t$ may belong to multiple taxonomy words. Therefore, ($w_1, w_2, \cdots, w_3$)
-
-Continue the above example, assume that $AB$ = 1.1, $BE$= 2.3. Note that $E \in s $, but $E$ does not belong to the signatures. Then the new four signatures: \{A,B,C\}, \{1.1,C\}, \{2.3,A,C\}, \{A,C,D\}, \{1.1,C,D\},\{B,C,D\},  \{2.3,C,D\}, \{A,B,D\}, \{1.1,D\}, \{2.3,A,D\}.
-
-
-
-%For strings which do not contain any non-taxonomy words, we propose a bipartite grouping index. The main idea is to separate the strings to several groups and for different groups, there is no need to compare the strings.
-%There are also methods that exploit triangle inequality to support edit distance-based similarity queries [27]. Edit distances of every data string to pre-chosen reference strings are precomputed, and used by the query processing algorithm to filter non-promising data strings based on the triangle inequality. Several issues regarding judicious selection of reference objects are studied in [27]. Alternatively, existing metric indexes [36] can be used for query processing too. As this line of methods is applicable to any metric distance, they cannot attain ultra fast performance. But in this paper, we select multiple groups and therefore we can obtain better performance.
-%Multiple reference points, and therefore we can prune away strings by those multiple reference points.
-
-\subsection{Count-Min estimation}
-
-In order to quickly decide if the number of pairs after composite filters, we develop a count-min estimation to quickly determine which $n$ is good for filtering. See the following two examples for joins. 
-
-See the example in Figure \ref{fig:signature_example1}. In this example, $\theta$ = 0.8. If we use the 1-element signature, then we cannot prune away any string pair. In signature 2, we use 2-element signature, then there is no candidate. Therefore, the filtering power is better.
-
-Further, when we consider the taxonomy ABCD ISA AGK, shown in Figure \ref{fig:signature_example1}. Then there is one answer pair (s1,t1). The new signature include the taxonomy ID 1.1 and 1  as shown.
-
-\begin{figure}[h]
-\centering
-\includegraphics[scale=0.8]{figures/signature_example1}
- \caption{Illustration to the difference of signature schemes}
-\label{fig:signature_example1}
-\end{figure}
-
-A Count-Min (CM) sketch with parameters ( $\varepsilon, \delta$) is represented by a two-dimensional
-array counts with width $w$ and depth $d$. Given parameters ($\varepsilon, \delta$), set
-$w$ = $\lceil \frac{e}{\varepsilon} \rceil$ and $d$ = $\lceil ln \frac{1}{\delta} \rceil $. Each entry of the array is initially zero.
-
-
-When a data item ($w,i$) arrives, meaning that the signature $w$ has the length $i$, then $i$ is added to one cell in each row; the counter is determined by $h_j$. Formally, set $\forall 1 \leq j \leq d$, then count[j,$h_j(i)$]   
 
 \section{Experimental analysis}
 
