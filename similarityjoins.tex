@@ -109,9 +109,9 @@ For each tokens, there are two cases, that is, it contains a taxonomy word, say 
 
 Continue the above example, assume that $AB$ = 1.1, $BE$= 2.3. Note that $E \in s $, but $E$ does not belong to the signatures. Then the new four signatures: \{A,B,C\}, \{1.1,C\}, \{2.3,A,C\}, \{A,C,D\}, \{1.1,C,D\},\{B,C,D\},  \{2.3,C,D\}, \{A,B,D\}, \{1.1,D\}, \{2.3,A,D\}.
 
-\smallskip
+\subsubsection{Comparison with other schemes}
 
-\noindent \textbf{Comparison with state-of-the-art signature filters}  We compare our composite prefix filter with state-of-the-art filters. The objective of the filters is to prune dissimilar strings as many as possible. They require to select a set of q-grams from each of two strings as signatures, denoted as Sig(r) and Sig(s), and compare the two q-gram sets to check whether they share common signatures. Pruning power and filtering cost are two important issues in designing filters.
+ We compare our composite prefix filter with state-of-the-art filters. The objective of the filters is to prune dissimilar strings as many as possible. They require to select a set of q-grams from each of two strings as signatures, denoted as Sig(r) and Sig(s), and compare the two q-gram sets to check whether they share common signatures. Pruning power and filtering cost are two important issues in designing filters.
 
 We first consider the pruning power. One one hand, the smaller the production size of the two signature sets $|Sig(r)| \times$
 $|Sig(s)|$, the smaller probability they share common q-grams, and thus the higher pruning power. On the other hand, the number of matching q-grams cannot exceed the smaller signature size of the two strings, min($|Sig(r)|, |Sig(s)|$). Thus
@@ -125,9 +125,15 @@ $|Sig(r)|$ + $|Sig(s)|$. Table 3 compares the pruning power and filtering cost o
 
 \noindent \textbf{Length filters}
 
-%For strings which do not contain any non-taxonomy words, we propose a bipartite grouping index. The main idea is to separate the strings to several groups and for different groups, there is no need to compare the strings.
-%There are also methods that exploit triangle inequality to support edit distance-based similarity queries [27]. Edit distances of every data string to pre-chosen reference strings are precomputed, and used by the query processing algorithm to filter non-promising data strings based on the triangle inequality. Several issues regarding judicious selection of reference objects are studied in [27]. Alternatively, existing metric indexes [36] can be used for query processing too. As this line of methods is applicable to any metric distance, they cannot attain ultra fast performance. But in this paper, we select multiple groups and therefore we can obtain better performance.
-%Multiple reference points, and therefore we can prune away strings by those multiple reference points.
+
+\subsubsection{Composite signature: Performance}
+
+In this section, we cover various aspects of Composite-signature scheme's performance.
+We begin by proving that it has good asymptotic performance: For a particular setting of n1 and n2, we can prove
+that it provides good filtering effectiveness (i.e., generates only a few false positive candidate pairs) with few signatures per input set.
+
+\begin{theorem} If the Jaccard similarity of two strings are greater than $\theta$, then $Sig(u) \bigcap Sig(v) = \varnothing$ with probability 1-o(1). For this setting of parameters, the number of signature per string is O().
+\end{theorem}
 
 \subsection{Count-Min estimation}
 
@@ -169,21 +175,29 @@ Our composite signature estimation estimates the lower and upper bounds of algor
 
 \subsubsection{Estimation with length filters}
 
-We  demonstrate that the returned lower and upper bounds are correct, and then we analyze its space and time complexities.
+When we use the CountMin sketch to estimate the effectiveness of length filter. It is to
 
-Given a bucket with the sum $S$ and the number of lengths is $n$, the maximal frequency is $M$. Suppose each element can join with other adjacent $\mu$ elements. 
+%We  demonstrate that the returned lower and upper bounds are correct, and then we analyze its space and time complexities.
+%
+%Given a bucket with the sum $S$ and the number of lengths is $n$, the maximal frequency is $Max$, and the minimal frequency is $Min$, Suppose each element can join with other adjacent $\mu$ elements.
+%
+%Let $t = \frac{S}{M}$. Without the loss of generality, we assume that $t_1 \geq t_2$. Therefore, the upper bound of the join size is:
+%
+%$t_2 \times \mu M_1 M_2$ + $(t_1-t_2) \times \mu M_1$ = $\mu M_1 S_2$.
+%
+%In other words:
+%
+%$max(S_1 \cdot M_2, S_2 \cdot M_1)$
+%
+%The lower bound of the join size is
+%
+%$\mu \cdot (S_1+ S_2)$
+%
+%When we separate the data to two parts, we can try to make them the same for the sum.
+%
+%\begin{theorem} With at most $O(\log N)$ storage, we can compute the approximation with length filter. Each new data item needs $O(\log N)$ time to be processed.
+%\end{theorem}
 
-Let $t = \frac{S}{M}$. Without the loss of generality, we assume that $t_1 \geq t_2$. Therefore, the upper bound of the join size is:
 
-$t_2 \times \mu M_1 M_2$ + $(t_1-t_2) \times \mu M_1$ = $\mu M_1 S_2$.
-
-In other words:
-
-$max(S_1 \cdot M_2, S_2 \cdot M_1)$
-
-
-
-\begin{theorem} With at most $O(\log N)$ storage, we can compute the approximation with length filter. Each new data item needs $O(\log N)$ time to be processed.
-\end{theorem}
 
 

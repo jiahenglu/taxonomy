@@ -9,13 +9,24 @@
 \end{figure}
 
 
-Strings form a fundamental data type in computer systems and string searching has been extensively studied since the
-inception of computer science. String similarity search takes a set of strings and a query string as input, and outputs all
-the strings in the set that are similar to the query string. A join extends the notion of similarity search further and require
-all similar string pairs between two input string sets to be reported. Both similarity search and similarity join are
-central to many applications such as data integration and cleaning.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.45\textwidth]{figures/taxonomylabels}
+ \caption{An example of taxonomy with labels}
+\label{fig:taxonomy}
+\end{figure}
 
- Taxonomies are sets of is-a hierarchies, which allow aggregating low level data items into higher level concepts. For instance, they found application in (i) mining recurrent high level associations among data as well as their temporal changes [9], [10], [11] and [12], (ii) discovering flipping correlations, i.e., patterns whose correlation flips positive to negative (or vice versa) when generalizing data items at higher abstraction levels [13], and (iii) performing social data disambiguation and analysis [14], [15], [16] and [17]. However, to the best of our knowledge, the integration of taxonomy information in data used for classifier training has never been investigated so far.
+
+Strings form a fundamental data type in computer systems and  string joins find all string pairs between two input string collections.  String joins are essential operations in
+many applications, such as  data integration \cite{conf/sigmod/Sarawagi04}, data cleansing \cite{conf/vldb/ArasuGK06,journals/www/LiJM06} and data exploration. Conceptually, there are two types of string joins: exact joins and approximate joins. Exact joins mean that two matching strings should be exactly the same, while approximate joins tolerate certain difference
+  between two strings and the similarity of two strings can be measured by a similarity function, such as  $n$-gram similarity~\cite{conf/spire/Kondrak05}, Levenshtein Distance
+\cite{journals/pvldb/XiaoWL08,conf/sigmod/WangLF12}, Jaro-Winkler
+measure~\cite{Winkler99thestate}, Jaccard
+similarity~\cite{conf/icde/ChaudhuriGK06}, cosine
+similarity~\cite{journals/ipm/SaltonB88}.
+
+
+ Taxonomies are sets of IS-A hierarchies, which identify the relations between different concepts. For example, Figure \ref{fig:taxonomy} shows an example of taxonomy for geographical concepts. However, to the best of our knowledge, the integration of taxonomy information in data used for classifier training has never been investigated so far.
 
 
 

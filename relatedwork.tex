@@ -12,7 +12,7 @@ from Wikipedia categories. With more web data, Probase
 
 
  The contributions of this paper \cite{journals/vldb/MartinenghiT14}   are the following: a simple but solid framework for embedding taxonomies
-into relational databases. 
+into relational databases.
 
 
 
@@ -63,16 +63,3 @@ posed segment filter to improve pruning power. PPJoin [29]
 used the positions of prefix and suffix to improve pruning
 power for token-based similarities. Length filter was pro-
 posed to prune dissimilar answers based on length difference [8]. TrieJoin [23] used a different framework that directly computed real similarity using the trie structure.
-
-\smallskip
-
-\noindent \textbf{Bucket histograms.}  The histogram is the most widely used form to store statistical information of the data distributions
-in a database. Many different histograms have been proposed in the literature and some have been deployed in commercial RDBMSs. However, almost all previous histograms have one thing in common: they all use buckets to partition the data, although in different ways.
-A bucket-based histogram approximates the data in an attribute of a relation by grouping attribute values into buckets and estimating the attribute values and their frequencies based on the summary statistics maintained in each bucket. More specifically, a histogram of an attribute is an approximation of the frequency distribution of the attribute values obtained as follows: The
-(attribute value, frequency) pairs of the distribution are partitioned into buckets; The frequency
-of each value in a bucket is approximated by the average of the frequencies of all values in the
-bucket; The set of values in a bucket is usually approximated in some compact fashion as well.
-
-The popular equi-depth histogram \cite{conf/sigmod/Piatetsky-ShapiroC84}  partitions the interval between the minimum and
-maximum attribute value of a column into consecutive subintervals so that the total frequency of
-the attribute values for each subinterval is the same. It is interesting to note that these two simple histograms (or their variants) are still used extensively in today¡¯s major commercial RDBMSs like Oracle, Informix, Microsoft SQL Server, Sybase, and Ingres.
