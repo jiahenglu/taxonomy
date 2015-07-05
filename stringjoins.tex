@@ -2,12 +2,7 @@
 
 We consider the exact joins including hypernymy and hyponymy and mixed three predicates based on taxonomy T.
 
-
-
 The baseline join algorithm is the nested-loop join. All string pairs are accessed to determine the hyper-hypo relationships. But this algorithm is obviously not efficient. Therefore, we propose an efficient algorithm.
-
-
-
 
 
 
@@ -80,3 +75,6 @@ return a stream of matches $T_q$ based on the taxonomy.
 
 \begin{theorem}  Algorithm \ref{alg:exactjoin} is an optimal algorithm. The computing cost is linear to the sum of the size of the input and output. That is, each output result contribute to the final answer.
 \end{theorem}
+
+
+

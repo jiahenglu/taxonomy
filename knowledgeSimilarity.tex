@@ -112,9 +112,9 @@
 \begin{abstract}
 
 A string join finds all string pairs between two input string collections. It is an essential operation in
-many applications, such as data integration and data cleansing. This paper investigates a novel challenge to integrate taxonomy information into string joins. In general, the taxonomy presents a general-purpose strategy to improve the accuracy of string joins by enriching data with semantics-based knowledge  (i.e., a set of is-a hierarchies). For example, two records about ``U.S.'' and ``California'' may have closely semantic relations, as  ``California'' is a state of ``U.S.''.
+many applications, such as data integration and data cleansing. This paper investigates a novel challenge to integrate taxonomy into string joins. In general, the taxonomy presents a general-purpose strategy to improve the accuracy of string joins by enriching data with semantics-based knowledge  (i.e., a set of IS-A hierarchies). For example, ``\textsf{California}'' is a state of ``\textsf{U.S.}'' according to a geographical taxonomy.
 
- We first study string join which specifies the exact the IS-A relationship between strings. Then we study the similarity string joins. We develop a new similarity measure with taxonomy. Then we propose new similarity join algorithms. We propose a new composite signatures. In order to optimize the processing, the key step is to decide a parameter $n$. Then we extend the count-min sketch to develop an estimation algorithm. Finally, the extensive performance evaluation shows that the exact and approximate string joins utilize the taxonomy to improve the effectiveness of joins  and scales very well when important parameters like  data size, and number of dimensions increase.
+In this work, we study both exact-join and approximate-join cases with taxonomy. Exact joins mean that two strings have the exact IS-A relation, while approximate joins extend the existing similarity join functions to utilize taxonomy. In particular, for exact joins, we exploit the taxonomy indexes of strings to develop an optimal algorithm to ensure that the cost is bounded by the size of input and output data. For similarity joins,  we extend develop several optimizations to reduce the size of intermediate results. Our strategy is based on a novel filtering strategy to effectively filter irrelevant string pairs based on the taxonomy and signature of strings. Finally,  the extensive performance evaluation shows that both exact-join and approximate-join can utilize the taxonomy to improve the effectiveness of joins  and scales very well with important parameters like  data size, and taxonomy size.
 
 \end{abstract}
 
@@ -135,6 +135,8 @@ many applications, such as data integration and data cleansing. This paper inves
 \input{stringjoins}
 
 \input{similarityjoins}
+
+\input{extension}
 
 \input{experiments}
 
