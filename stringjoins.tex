@@ -1,8 +1,7 @@
 \section{Exact string joins with taxonomy}
 
-We consider the exact joins including hypernymy and hyponymy and mixed three predicates based on taxonomy T.
 
-The baseline join algorithm is the nested-loop join. All string pairs are accessed to determine the hyper-hypo relationships. But this algorithm is obviously not efficient. Therefore, we propose an efficient algorithm.
+The baseline join algorithm is the nested-loop join. All string pairs are accessed to determine the IS-A relationships. But this algorithm is obviously not efficient. Therefore, we propose an efficient algorithm.
 
 
 
@@ -10,7 +9,7 @@ The baseline join algorithm is the nested-loop join. All string pairs are access
 \centering
 \includegraphics[scale=0.4]{figures/labeljoins}
  \caption{Join inverted lists}
-\label{fig:taxonomy}
+\label{fig:invertedlist}
 \end{figure}
 
 
@@ -52,9 +51,6 @@ The baseline join algorithm is the nested-loop join. All string pairs are access
 
 Note that the above algorithm may contain the duplicate result set. Therefore, we need to sort and remove the duplication.
 
-
-
-\subsection{Join algorithms}
 
 The key to an efficient, uniform mechanism for set-at-atime
 (join-based) matching of query graph patterns is a positional

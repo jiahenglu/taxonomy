@@ -22,17 +22,32 @@ If there are more than one string, then we can perform the verification after th
 We define the taxonomy similarity between two strings:
 
 \begin{definition}[Taxonomy intersection]
-Given two token sets $S_1$ and $S_2$, and a taxonomy $\mathcal{T}$, we say an element (token) $e \in S_1 \bigcap_T S_2$ if one the following cases is satisfied:
+Given two token sets $S_1$ and $S_2$, and a taxonomy $\mathcal{T}$, we say an element (token) $e \in S_1 \bigcap_T S_2$, if $ \exists E \subseteq S_1$ and $e \in E$, and $\exists T \subseteq S_2$, s.t. $\exists (E,T) \in \mathcal{T}$.\end{definition}
 
-(1) $ e \in S_1$ (resp. $S_2$) and $\exists t \in S_2$ (resp. $S_1$), s.t. $(e,t) \in \mathcal{T} $, or
 
-(2) $ e \in S_1$, and $e$ is a token of $e'$, and every token $e''$ in $e$ is in the set $S_1$, s.t. $\exists (e',t) \in \mathcal{T}$.\end{definition}
+\noindent \textbf{Remark.}  Given two strings $s$ and $t$, it is clear that $|s \cap t| \leq min (|s|,|t|)$. But based on the taxonomy intersection, it is possible that $|s \cap_T t| > |s| $ or $|s \cap t| > |t| $. For example, s=``California'', t=``U.S.'', $|s \cap_T t|$ = 2.
 
-\begin{definition}[Taxonomy similarity]   Given two sets of tokens $S_1$ and $S_2$,we define the taxonomy similarity (TS) between $S_1$ and $S_2$ as follows:
+\begin{definition}[Taxonomy-based Jaccard]   Given two sets of tokens $S_1$ and $S_2$,  the taxonomy-based Jaccard (TJ) between $S_1$ and $S_2$ is that:
 
 \begin{equation}
-TS(S_1,S_2)=  \frac{(S_1 \bigcap_T S_2) \bigcup (S_1 \bigcap S_2) }{S_1 \bigcup S_2}
+TJ(S_1,S_2)=  \frac{(S_1 \bigcap_T S_2) \bigcup (S_1 \bigcap S_2) }{S_1 \bigcup S_2}
 \end{equation} \end{definition}
+
+\begin{algorithm}
+{\bf Input}: two strings $s_1$ and $s_2$, a taxonomy $\mathcal{T}$ \\
+{\bf Output}: $TJ(s_1,s_2,\mathcal{T})$
+\begin{compactenum}[(1)]
+\item Let $S_T $ to contain all tokens for taxonomy-based intersection. Initially, $S_T = \emptyset$.
+\item Let $L_1$ (resp. $L_2$) denote the applicable taxonomy node list for $s_1$ (resp. $s_2$);
+\item Scan $L_1$ and $L_2$ sequentially to find any matching pair $n_1 \in L_1$, $n_2 \in L_2$, s.t. ($n_1$,$n_2$) has the IS-A relation in $\mathcal{T}$;
+\item Add all tokens $t \in n_1 \cup n_2$ to the set $S_T$;
+\item  return $\frac{S_T \cup (|s_1 \cap s_2|)}{|s_1 \cup s_2|}$;
+\end{compactenum}
+\caption{String joins with taxonomy}
+\label{alg:exactjoin}
+\end{algorithm}
+
+The time complexity of the TJ is $O(|s_1|+|s_2|+|n_1|+|n_2|)$, where $n_1$ (resp. $n_2$) denotes all applicable taxonomy nodes for string $s_1$  (resp. $n_2$). Assume that the preprocessing step finds the taxonomy relation for each string. Then the online algorithm only needs to find the matching IS-A relation between two strings to compute the intersection set with taxonomy.
 
 \subsection{String similarity join algorithms}
 
@@ -67,6 +82,26 @@ tokens of $s$ and the first $\lceil(1-\theta)|t|\rceil$ smallest
 tokens of $t$  must share at least one token.
 \end{lem}
 
+\subsubsection{Prefix scheme with taxonomy}
+
+Given an
+ordering $O = (U_1 , U_2 )$ of the token universe $U_1$ and $U_2$, where $U_1$ denotes the set of non-taxonomy tokens and $U_2$ is the set of taxonomy tokens. Let $P_s$ denote the smallest $\lceil(1-\theta)|s|\rceil$ tokens, $P_s = NP_s \cup TP_s$, where $NP_s$ is the non-taxonomy tokens and $TP_s$ is the taxonomy tokens. And $T_s$ is the taxonomy id for the taxonomy signature of $s$, and $A_s$ is the set of all applicable taxonomy of string $s$.
+
+\begin{lem} (\textsc{Prefix filter principle with taxonomy})  Given two strings $s$ and $t$, if TJ($s, t$) $\geq \theta$, then one of the following cases holds:
+
+ \begin{itemize}
+   \item $P_s \cap P_t \neq \emptyset$, or
+   \item  $T_s \cap A_t \neq \emptyset$ or $T_t \cap A_s \neq \emptyset$
+ \end{itemize}
+
+\end{lem}
+
+
+\smallskip
+
+For example, consider two strings s=\{A,B,C,D,E\} and t=\{F,G\}. Assume that $t_1$ = (ACD,G) is an IS-A relation and the $|s \cap_T t| $=4, $JT(s,t)$ = $\frac{4}{7}$= 0.57.
+If the threshold $\theta =$ 0.5, then  $\lceil (1-\theta) \times 5 \rceil$= 3 for $s$ and $\lceil (1-\theta) \times 2 \rceil$= 1. Assume that the order of non-taxonomy tokens $O_1$= \{$B, E, F$\} and the order of taxonomy tokens is $O_2$ = \{$A, C, D, G$\}. So the signature of $s$ is \{B,E,A\}, and an IS-A relation $T_s$ = (ACD,G). The signature of $t$ is \{F\} and $A_t$ = (ACD,G). $ T_s \cap A_t \neq \emptyset$.
+
 %\subsubsection{Bloom matrix}
 %
 %We develop a new bloom matrix to extend the bloom filtering to quickly decide if there are any possibility that two sets of collections can produce at least one matching pair.
@@ -81,9 +116,7 @@ tokens of $t$  must share at least one token.
 %
 %If (1) and (3) OR (1) and (2) are satisfied, then there are no any solution. We can quickly skip the join for those two collections. Otherwise we need to go into the collection and use the following algorithm to find the join solutions.
 
-
-\subsubsection{Composite signature filtering}
-
+\subsubsection{N-ary prefix scheme}
 
 Given a string s=\{A,B,C,D,E\}. If we use the prefix filtering, then the signature is A and B. Assume that $\theta$=0.75, (1-0.75)*5=1.25 and $\lceil 1.25 \rceil$=2. But in our bi-tuple scheme, we select two tokens as the signatures, including \{A,B\},\{A,C\},\{B,C\}.
 
@@ -99,7 +132,7 @@ Then the number of signature is  $\binom{(1-\theta)|s|+n-1}{n}$ = $O(((1-\theta)
 
 Let $t= (1-\theta)|s|$, that is, $O((t+n-1)^{n})$. If n is too large, then there are many signatures, it may not be an optimal solution. Therefore, the key point is how to decide a good $n$?
 
-\smallskip
+\subsubsection{N-ary prefix scheme with taxonomy}
 
 \noindent \textbf{Composite signatures.} That means, the signatures may contain both TG IDs and tokens. We describe our methods as follows:
 
@@ -107,9 +140,40 @@ Let $t= (1-\theta)|s|$, that is, $O((t+n-1)^{n})$. If n is too large, then there
 
 For each tokens, there are two cases, that is, it contains a taxonomy word, say $t \in w$. Then we use $w$ to replace $t$. Note that $t$ may belong to multiple taxonomy words. Therefore, ($w_1, w_2, \cdots, w_3$)
 
-Continue the above example, assume that $AB$ = 1.1, $BE$= 2.3. Note that $E \in s $, but $E$ does not belong to the signatures. Then the new four signatures: \{A,B,C\}, \{1.1,C\}, \{2.3,A,C\}, \{A,C,D\}, \{1.1,C,D\},\{B,C,D\},  \{2.3,C,D\}, \{A,B,D\}, \{1.1,D\}, \{2.3,A,D\}.
+Continue the above example, assume that $DE$ = 1.1. Note that $E \in s $, but $E$ does not belong to the signatures. Then the new three signatures:  \{A,C,1.1\}, \{B,C,1.1\}, \{A,B,1.1\}.
+
+
+\begin{lem} (\textsc{Composite prefix filter principle with taxonomy})  Given two strings $s$ and $t$, if TJ($s, t$) $\geq \theta$, then one of the following cases holds: $BP_s \cap BP_t \neq \emptyset$, where $BP$ is a set of binary-tuple signatures ($s_1$,$s_2$), where $s_1$ and $s_2$ are two signatures from the  smallest $\lceil(1-\theta)|s|\rceil$+1 tokens.
+
+\end{lem}
 
 \subsubsection{Comparison with other schemes}
+
+
+\begin{table}[t]
+\centering
+\begin{tabular}{|@{\hspace{1mm}}c@{\hspace{1mm}}|@{\hspace{1mm}}c@{\hspace{1mm}}|@{\hspace{1mm}}c@{\hspace{1mm}}|}
+%{|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|}
+%|c|m{6cm}|
+\hline
+ \textbf{Methods@{}} & \textbf{Signature size} &  \textbf{Filtering power} \\
+  \hline \hline
+
+  Prefix & (1 -$\theta$)$|s|$ & Optimal \\
+
+
+   PartEnum & CPU:  O($1.2002^{|V|} \cdot |V|^{O(1)}$ ) & Optimal \\
+
+   LSH & CPU:  O($|V|$log$|V|$+$|E|$)  & $(2\bar{d}+3)/5$  \\
+
+   Composite Prefix & I/O: O(sort($|E|$+$|V|$))   & No bound \\
+
+
+  \hline
+\end{tabular}
+\caption{Time and  I/O cost and performance ($\bar{d}$: the average degree)}
+\label{tab:complexity}
+\end{table}
 
  We compare our composite prefix filter with state-of-the-art filters. The objective of the filters is to prune dissimilar strings as many as possible. They require to select a set of q-grams from each of two strings as signatures, denoted as Sig(r) and Sig(s), and compare the two q-gram sets to check whether they share common signatures. Pruning power and filtering cost are two important issues in designing filters.
 
@@ -138,15 +202,15 @@ that it provides good filtering effectiveness (i.e., generates only a few false 
 
 Given a $n$-tuple composite filter, we estimate its filtering effectiveness.
 
-We assume that there are $N$ tokens in all tables and the length of each string is $s$. 
+We assume that there are $N$ tokens in all tables and the length of each string is $s$.
 
-The possibility of false positive for a string pair $s, t$ is that $P(E_A | E_B)$, $E_B$ means that  $sim(s,t) < \theta$; $E_A$ means that $s$ and $t$ pair cannot be pruned away with the filter.  
+The possibility of false positive for a string pair $s, t$ is that $P(E_A | E_B)$, $E_B$ means that  $sim(s,t) < \theta$; $E_A$ means that $s$ and $t$ pair cannot be pruned away with the filter.
 
 First consider the 1 prefix signature. We computer $P(E_A, E_B)$, that is, the prefix signature cannot prune away the pair of $Jaccard(s,t) < \theta$
 
 Let $\lambda$ = $(1-\theta)s$ signatures for $t$.
 
-Since $|s| = |t|$ and   $Jaccard(s,t) < \theta$ $\Longleftarrow$ $ |s \cap t| < |s| \cdot \theta$. 
+Since $|s| = |t|$ and   $Jaccard(s,t) < \theta$ $\Longleftarrow$ $ |s \cap t| < |s| \cdot \theta$.
 
 \subsection{Count-Min estimation}
 
