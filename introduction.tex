@@ -17,44 +17,38 @@
 
 
 
- String joins, which find all string pairs between two input string collections, are essential operations in many applications, such as  data integration \cite{conf/sigmod/Sarawagi04}, data cleansing \cite{conf/vldb/ArasuGK06,journals/www/LiJM06} and record linkage \cite{books/Winkler99}. Conceptually, there are two cases of string joins: \textit{exact-joins} and \textit{approximate-joins}. Exact joins mean that two matching strings are exactly the same, while approximate joins tolerate certain difference between two strings and the similarity of two strings is measured by a similarity function, such as  Levenshtein Distance
+ String joins, which find all string pairs between two input collections, are essential operations in many applications, such as  data integration \cite{conf/sigmod/Sarawagi04}, data cleansing \cite{conf/vldb/ArasuGK06,journals/www/LiJM06} and record linkage \cite{books/Winkler99}. Conceptually, there are two cases of string joins: \textit{exact-joins} and \textit{approximate-joins}. Exact joins mean that two matching strings are exactly the same, while approximate joins tolerate certain difference between two strings and the similarity between two strings is measured by a similarity function, such as  Edit distance
 \cite{journals/pvldb/XiaoWL08,conf/sigmod/WangLF12},  Jaccard
-similarity~\cite{conf/icde/ChaudhuriGK06} and cosine
+similarity~\cite{conf/icde/ChaudhuriGK06} and Cosine
 similarity~\cite{journals/ipm/SaltonB88}.
 
-Recently, there are some work to improve the effectiveness of string joins by using synonym. Their observation is that the exisitng similarity function can only capture the syntatic similarity, but not semantic. Two string may present the same entity, but their spelling are completely. differently. For a given word, we can use WordNet [4] to find its synonyms
-or find terms that have concept-instance relationships
-with the word. These are good candidates for string joins. But WordNet does not contain information such as
-Microsoft is an IT company, or Kindle is a popular e-Reader.
-Still, terms such as IT company, Kindle, Microsoft are frequently
-used in data sets. Some recent work (e.g., [26, 21])
-focuses on automatically discovering relationships among
-terms by mining web pages and search engine click logs.
-This enables us to find important concept-instance relationship
-for large sets of terms.
- Taxonomies are sets of IS-A hierarchies, which identify the relations between different concepts.
+In recent years, we have witnessed the emergence of various solutions to improve the effectiveness of string joins by using synonyms \cite{conf/sigmod/LuLWLW13,conf/icde/ArasuCK08,conf/cpm/BarbayGMR06,conf/vldb/ArvindSR09}.
+The traditional similarity functions consider only syntactic similarities, e.g., number of common
+words or $q$-grams. But there are many important cases where syntactically different
+strings can represent the same real-world object. For example,
+``\textsf{Bill}'' is a short form of ``\textsf{William}''.  Given two collections of strings,  the synonym-based similarity function can utilize the available synonyms to find string pairs which are semantically similar. While those methods improve the effectiveness of string joins, a synonym dictionary does not contain information such as
+``\textsf{Helsinki is a city of Finland}'', or `\textsf{`Apple 6 Plus is a new model of iPhone}''. Still, term pairs such as ``\textsf{Helsinki}'' and ``\textsf{Finland}'', ``\textsf{Apple 6 Plus}'' and ``\textsf{iPhone}''  have strong semantic relations.
+
 
 In this paper, we assume that we already have complete
-information of term substitutions, and we will focus on how
+information of these IS-A relations, i.e. \textit{taxonomy}, and we will focus on how
 to efficiently perform a string join by utilizing the taxonomy, and how to optimize the index structure
-for this purpose.
-
-For example, Figure \ref{fig:taxonomyexample} shows an example of a taxonomy tree for geographical concepts.   In general, the taxonomy presents a general-purpose strategy to improve the accuracy of string joins by enriching data with semantics-based knowledge  (i.e., a set of IS-A hierarchies). For example, Figure \ref{fig:twotables} shows two tables  from different sources about produce information. If we perform a traditional string join based on area, then there is no any matching results. But based on the taxonomy, if we know that California is a state of U.S. and Apple 6s is a model of Iphone. Then the first records of two tables are possible matching records.
-
-The concept-instance
-relationship defines a taxonomy. The substitution relationship
+for this purpose.  Taxonomies are sets of IS-A hierarchies, which identify the relations between different concepts. The IS-A relationship
 is a transitive closure of the concept-instance relationship.
-For example, if ``puppy'' is an instance of ``dog'', and
-``dog'' is an instance of ``pet'', then ``puppy'' could be a substitute
-of ``pet''. If we treat each term as a node, and create
+For example, if ``\textsf{kitten}'' is an instance of ``\textsf{cat}'', and
+``\textsf{cat}'' is an instance of ``\textsf{animal}'', then ``\textsf{kitten}'' is an instance
+of ``\textsf{animal}''. If we treat each term as a node, and create
 for each (concept, instance) pair, an edge from the concept
 to the instance, then we can think of the taxonomy as a directed tree or forest. For any node that representing a term,
-its substitute could be any descendant of it in the tree. Figure
-1 gives an example of a concept-instance taxonomy.
+the IS-A relation could be any descendant of it in the tree. Figure
+1 gives an example of a geographical taxonomy tree.
+
+%For example, the (Guangdong, Shenzhen) is a (concept, instance) pair and (Shenzhen, China) has the IS-A relation, as Shenzhen is a city in China.
 
 
-For the exact-join with taxonomy, we can extend the above SQL language to support. For example,
-consider the following SQL script:
+
+To support string joins with taxonomy, we can extend the SQL language by adding a new predicate ``IS-A''. For example,
+consider two tables in Figure \ref{fig:twotables}, which contain the information about the products of cellphones.  Consider the following SQL script:
 
 \vspace{2mm}
 
@@ -65,10 +59,8 @@ consider the following SQL script:
  \vspace{2mm}
 
 
-\noindent which shows a very simple SQL script that
-perform the join between two tables in Figure \ref{fig:twotables}.
-In the figure, the area and product name are performed the IS-A relations. This script the ``IS-A'' predicate.
-
+\noindent which shows a simple SQL script that
+performs the IS-A join between two tables. Note that the traditional string join cannot obtain any result due to the differece of the presentation of the same object.  But we can support the IS-A join to find the results.
 
 For the approximate joins, the brute-force algorithm that enumerates every string pair and checks whether the two strings in the pair are similar is rather expensive. To alleviate this problem, many algorithms have been proposed in the recent two decades. One widely-adopted technique employs a filter-verification framework, which includes two steps: (1) Filter step: devising effective filtering algorithms to prune large numbers of dissimilar pairs and generating a set of candidate pairs; and (2) Verification step: verifying each candidate pair by computing
 the real similarity and outputting the final results. Filtering algorithms in the first step play an important role

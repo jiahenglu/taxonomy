@@ -82,7 +82,34 @@ tokens of $s$ and the first $\lceil(1-\theta)|t|\rceil$ smallest
 tokens of $t$  must share at least one token.
 \end{lem}
 
-\subsubsection{Prefix scheme with taxonomy}
+\subsubsection{N-ary prefix scheme}
+
+
+
+
+Given a string $s$, we can construct the $n$-ary prefix token combination as follows:  Given an
+ordering $O$ of the token universe $U$, we select $n$ tokens from the first $\lceil (1-
+\theta) \cdot |s| \rceil + n -1$ in $s$. Then let $B^s_n$ denote the set to contain all $n$-combinations. That is  $|B^s_n|$= $\binom{(1-\theta)|s|+n-1}{n}$.
+
+\begin{lem} (\textsc{N-ary Prefix filter principle}) If Jaccard($s, t$) $\geq \theta$, then $B^s_n \cap B^t_n \neq \emptyset$, where $B(\dot)_n$ is the n-ary prefix token combination.
+\end{lem}
+
+Given a string s=\{A,B,C,D,E\}. If we use the prefix filtering, then the signature is A and B. Assume that $\theta$=0.75, (1-0.75)*5=1.25 and $\lceil 1.25 \rceil$=2. But in our bi-tuple scheme, we select two tokens as the signatures, including \{A,B\},\{A,C\},\{B,C\}.
+
+Similarly, we can develop a 3-tuple signature. we select three tokens as the signatures, including $\binom{4}{3}$=4, i.e. \{A,B,C\}, \{A,C,D\}, \{B,C,D\}, \{A,B,D\}.
+
+Furthermore, we can extend to 4-tuple signature, that is $\binom{5}{4}$=4, i.e. \{A,B,C,D\}, \{A,C,D,E\}, \{A,B,D,E\}, \{A,C,D,E\}, \{B,C,D,E\}.
+
+One question is how to select the number $n$ for n-tuple scheme. What is the optimal value of $n$? Let $t= (1-\theta)|s|$, that is, $O((t+n-1)^{n})$. If n is too large, then there are many signatures, it may not be an optimal solution. Therefore, the key point is how to decide a good $n$?
+
+
+\subsubsection{N-ary prefix scheme with taxonomy}
+
+ Given a string s=\{A,B,C,D,E\}, assume that we use 3-tuple signature, $\binom{4}{3}$=4, i.e. \{A,B,C\}, \{A,C,D\}, \{B,C,D\}, \{A,B,D\}.
+
+For each tokens, there are two cases, that is, it contains a taxonomy word, say $t \in w$. Then we use $w$ to replace $t$. Note that $t$ may belong to multiple taxonomy words. Therefore, ($w_1, w_2, \cdots, w_3$)
+
+Continue the above example, assume that $DE$ = 1.1. Note that $E \in s $, but $E$ does not belong to the signatures. Then the new three signatures:  \{A,C,1.1\}, \{B,C,1.1\}, \{A,B,1.1\}.
 
 Given an
 ordering $O = (U_1 , U_2 )$ of the token universe $U_1$ and $U_2$, where $U_1$ denotes the set of non-taxonomy tokens and $U_2$ is the set of taxonomy tokens. Let $P_s$ denote the smallest $\lceil(1-\theta)|s|\rceil$ tokens, $P_s = NP_s \cup TP_s$, where $NP_s$ is the non-taxonomy tokens and $TP_s$ is the taxonomy tokens. And $T_s$ is the taxonomy id for the taxonomy signature of $s$, and $A_s$ is the set of all applicable taxonomy of string $s$.
@@ -102,50 +129,13 @@ ordering $O = (U_1 , U_2 )$ of the token universe $U_1$ and $U_2$, where $U_1$ d
 For example, consider two strings s=\{A,B,C,D,E\} and t=\{F,G\}. Assume that $t_1$ = (ACD,G) is an IS-A relation and the $|s \cap_T t| $=4, $JT(s,t)$ = $\frac{4}{7}$= 0.57.
 If the threshold $\theta =$ 0.5, then  $\lceil (1-\theta) \times 5 \rceil$= 3 for $s$ and $\lceil (1-\theta) \times 2 \rceil$= 1. Assume that the order of non-taxonomy tokens $O_1$= \{$B, E, F$\} and the order of taxonomy tokens is $O_2$ = \{$A, C, D, G$\}. So the signature of $s$ is \{B,E,A\}, and an IS-A relation $T_s$ = (ACD,G). The signature of $t$ is \{F\} and $A_t$ = (ACD,G). $ T_s \cap A_t \neq \emptyset$.
 
-%\subsubsection{Bloom matrix}
-%
-%We develop a new bloom matrix to extend the bloom filtering to quickly decide if there are any possibility that two sets of collections can produce at least one matching pair.
-%
-%There are three conditions
-%
-%(1) There are no overlapping for non-taxonomy bloom matrixes.
-%
-%(2) No taxonomy relationships and no signature bloom filter with taxonomy tokens.
-%
-%(3) Length filtering for those taxonomy strings.
-%
-%If (1) and (3) OR (1) and (2) are satisfied, then there are no any solution. We can quickly skip the join for those two collections. Otherwise we need to go into the collection and use the following algorithm to find the join solutions.
-
-\subsubsection{N-ary prefix scheme}
-
-Given a string s=\{A,B,C,D,E\}. If we use the prefix filtering, then the signature is A and B. Assume that $\theta$=0.75, (1-0.75)*5=1.25 and $\lceil 1.25 \rceil$=2. But in our bi-tuple scheme, we select two tokens as the signatures, including \{A,B\},\{A,C\},\{B,C\}.
-
-Similarly, we can develop a 3-tuple signature. we select three tokens as the signatures, including $\binom{4}{3}$=4, i.e. \{A,B,C\}, \{A,C,D\}, \{B,C,D\}, \{A,B,D\}.
-
-Furthermore, we can extend to 4-tuple signature, that is $\binom{5}{4}$=4, i.e. \{A,B,C,D\}, \{A,C,D,E\}, \{A,B,D,E\}, \{A,C,D,E\}, \{B,C,D,E\}.
-
-One question is how to select the number $n$ for n-tuple scheme. What is the optimal value of $n$?
-
-Given a string s with length $|s|$, assume that we use n-tuple signature, and the similarity threshold is $\theta$.
-
-Then the number of signature is  $\binom{(1-\theta)|s|+n-1}{n}$ = $O(((1-\theta)|s|+n-1)^{n})$
-
-Let $t= (1-\theta)|s|$, that is, $O((t+n-1)^{n})$. If n is too large, then there are many signatures, it may not be an optimal solution. Therefore, the key point is how to decide a good $n$?
-
-\subsubsection{N-ary prefix scheme with taxonomy}
-
-\noindent \textbf{Composite signatures.} That means, the signatures may contain both TG IDs and tokens. We describe our methods as follows:
-
- Given a string s=\{A,B,C,D,E\}, assume that we use 3-tuple signature, $\binom{4}{3}$=4, i.e. \{A,B,C\}, \{A,C,D\}, \{B,C,D\}, \{A,B,D\}.
-
-For each tokens, there are two cases, that is, it contains a taxonomy word, say $t \in w$. Then we use $w$ to replace $t$. Note that $t$ may belong to multiple taxonomy words. Therefore, ($w_1, w_2, \cdots, w_3$)
-
-Continue the above example, assume that $DE$ = 1.1. Note that $E \in s $, but $E$ does not belong to the signatures. Then the new three signatures:  \{A,C,1.1\}, \{B,C,1.1\}, \{A,B,1.1\}.
 
 
-\begin{lem} (\textsc{Composite prefix filter principle with taxonomy})  Given two strings $s$ and $t$, if TJ($s, t$) $\geq \theta$, then one of the following cases holds: $BP_s \cap BP_t \neq \emptyset$, where $BP$ is a set of binary-tuple signatures ($s_1$,$s_2$), where $s_1$ and $s_2$ are two signatures from the  smallest $\lceil(1-\theta)|s|\rceil$+1 tokens.
 
-\end{lem}
+
+
+
+
 
 \subsubsection{Comparison with other schemes}
 
