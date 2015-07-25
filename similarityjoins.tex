@@ -77,7 +77,7 @@ principle \cite{conf/icde/ChaudhuriGK06} rephrased below.
 
 \begin{lem} (\textsc{Prefix filter principle}) \cite{conf/icde/ChaudhuriGK06} Given an
 ordering $O$ of the token universe $U$ and two strings $s$ and $t$, each with tokens sorted in the
-order of $O$.   If Jaccard($s, t$) $\geq \theta$, then the first $\lceil(1-\theta)|s|\rceil$ smallest
+order of $O$.   If Jaccard($s, t$) $> \theta$, then the first $\lceil(1-\theta)|s|\rceil$ smallest
 tokens of $s$ and the first $\lceil(1-\theta)|t|\rceil$ smallest
 tokens of $t$  must share at least one token.
 \end{lem}
@@ -91,7 +91,7 @@ Given a string $s$, we can construct the $n$-ary prefix token combination as fol
 ordering $O$ of the token universe $U$, we select $n$ tokens from the first $\lceil (1-
 \theta) \cdot |s| \rceil + n -1$ in $s$. Then let $B^s_n$ denote the set to contain all $n$-combinations. That is  $|B^s_n|$= $\binom{(1-\theta)|s|+n-1}{n}$.
 
-\begin{lem} (\textsc{N-ary Prefix filter principle}) If Jaccard($s, t$) $\geq \theta$, then $B^s_n \cap B^t_n \neq \emptyset$, where $B(\dot)_n$ is the n-ary prefix token combination.
+\begin{lem} (\textsc{N-ary signature principle}) Given two strings $s$ and $t$ and their n-ary signatures $T^s$ and $T^t$ respectively, if Jaccard($s, t$) $> \theta$, then $T^s \cap T^t \neq \emptyset$.
 \end{lem}
 
 Given a string s=\{A,B,C,D,E\}. If we use the prefix filtering, then the signature is A and B. Assume that $\theta$=0.75, (1-0.75)*5=1.25 and $\lceil 1.25 \rceil$=2. But in our bi-tuple scheme, we select two tokens as the signatures, including \{A,B\},\{A,C\},\{B,C\}.
@@ -112,30 +112,46 @@ For each tokens, there are two cases, that is, it contains a taxonomy word, say 
 Continue the above example, assume that $DE$ = 1.1. Note that $E \in s $, but $E$ does not belong to the signatures. Then the new three signatures:  \{A,C,1.1\}, \{B,C,1.1\}, \{A,B,1.1\}.
 
 Given an
-ordering $O = (U_1 , U_2 )$ of the token universe $U_1$ and $U_2$, where $U_1$ denotes the set of non-taxonomy tokens and $U_2$ is the set of taxonomy tokens. Let $P_s$ denote the smallest $\lceil(1-\theta)|s|\rceil$ tokens, $P_s = NP_s \cup TP_s$, where $NP_s$ is the non-taxonomy tokens and $TP_s$ is the taxonomy tokens. And $T_s$ is the taxonomy id for the taxonomy signature of $s$, and $A_s$ is the set of all applicable taxonomy of string $s$.
+ordering $O = (U_1 , U_2 )$ of the token universe $U_1$ and $U_2$, where $U_1$ denotes the set of non-taxonomy tokens and $U_2$ is the set of taxonomy tokens. Let $P_s$ denote the smallest $\lceil(1-\theta)|s|\rceil$ tokens.
 
-\begin{lem} (\textsc{Prefix filter principle with taxonomy})  Given two strings $s$ and $t$, if TJ($s, t$) $\geq \theta$, then one of the following cases holds:
+%\begin{lem} (\textsc{Prefix filter principle with taxonomy})  Given two strings $s$ and $t$ with n-ary prefix signatures, if TJ($s, t$) $\geq \theta$, then one of the following cases holds:
+%
+% \begin{itemize}
+%   \item $P_s \cap P_t \neq \emptyset$, or
+%   \item  $T_s \cap A_t \neq \emptyset$ or $T_t \cap A_s \neq \emptyset$
+% \end{itemize}
+%
+%\end{lem}
+%
 
- \begin{itemize}
-   \item $P_s \cap P_t \neq \emptyset$, or
-   \item  $T_s \cap A_t \neq \emptyset$ or $T_t \cap A_s \neq \emptyset$
- \end{itemize}
+
+%\begin{lem} (\textsc{Prefix filter principle with taxonomy})  Given two strings $s$ and $t$ with n-ary prefix signatures, if TJ($s, t$) $\geq \theta$, then one of the following cases holds:
+%
+% \begin{itemize}
+%   \item $P_s \cap P_t \neq \emptyset$, or both of the conditions satisfy:
+%   \item  $\exists sig^s \in P_s, sig = sig^s_{token} \cup sig^s_{tax} s.t. \exists sig^t \supseteq sig^s$ and $sig^s_{tax} \subseteq Tax(t)$ and
+%    \item  $\exists sig^t \in P_t, sig = sig^t_{token} \cup sig^t_{tax} s.t. \exists sig^s \supseteq sig^t$ and $sig^t_{tax} \subseteq Tax(s)$
+% \end{itemize}
+%
+%\end{lem}
+
+A signature set $P$ for a string $s$ is a binary tuple ($T,N$), where $T$ is a set of tokens and $N$ is a set of taxonomy nodes. 
+
+\begin{definition} [Signatures match strings]
+Given a signature set $P = (T,N)$ and a string $s$, we say $P$ matches $s$, denoted by $P \vdash s$ if $N \subseteq N^s$, where $N^s$ is a set of applicable taxonomy nodes of $s$ and  there exits a signature set $P' = (T',N')$ of $s$, s.t. $T \subseteq T'$.
+\end{definition}
+
+
+\begin{lem} (\textsc{Composite signatures principle})  Given two strings $s$ and $t$ with signatures $P^s$ and $P^t$ respectively, if TJ($s, t$) $> \theta$, then $P^s \vdash t$ and $P^t \vdash s$.
 
 \end{lem}
-
-
-\smallskip
 
 For example, consider two strings s=\{A,B,C,D,E\} and t=\{F,G\}. Assume that $t_1$ = (ACD,G) is an IS-A relation and the $|s \cap_T t| $=4, $JT(s,t)$ = $\frac{4}{7}$= 0.57.
 If the threshold $\theta =$ 0.5, then  $\lceil (1-\theta) \times 5 \rceil$= 3 for $s$ and $\lceil (1-\theta) \times 2 \rceil$= 1. Assume that the order of non-taxonomy tokens $O_1$= \{$B, E, F$\} and the order of taxonomy tokens is $O_2$ = \{$A, C, D, G$\}. So the signature of $s$ is \{B,E,A\}, and an IS-A relation $T_s$ = (ACD,G). The signature of $t$ is \{F\} and $A_t$ = (ACD,G). $ T_s \cap A_t \neq \emptyset$.
 
+\subsubsection{Similarity join algorithm}
 
-
-
-
-
-
-
+We discuss the similarity join algorithm based on the above n-ary composite signature filters. 
 
 \subsubsection{Comparison with other schemes}
 
@@ -202,68 +218,48 @@ Let $\lambda$ = $(1-\theta)s$ signatures for $t$.
 
 Since $|s| = |t|$ and   $Jaccard(s,t) < \theta$ $\Longleftarrow$ $ |s \cap t| < |s| \cdot \theta$.
 
-\subsection{Count-Min estimation}
-
-In order to quickly decide if the number of pairs after composite filters, we develop a count-min estimation to quickly determine which $n$ is good for filtering. See the following two examples for joins.
-
-See the example in Figure \ref{fig:signature_example1}. In this example, $\theta$ = 0.8. If we use the 1-element signature, then we cannot prune away any string pair. In signature 2, we use 2-element signature, then there is no candidate. Therefore, the filtering power is better.
-
-Further, when we consider the taxonomy ABCD ISA AGK, shown in Figure \ref{fig:signature_example1}. Then there is one answer pair (s1,t1). The new signature include the taxonomy ID 1.1 and 1  as shown.
-
-\begin{figure}[h]
-\centering
-\includegraphics[scale=0.8]{figures/signature_example1}
- \caption{Illustration to the difference of signature schemes}
-\label{fig:signature_example1}
-\end{figure}
-
-A Count-Min (CM) sketch with parameters ( $\varepsilon, \delta$) is represented by a two-dimensional
-array counts with width $w$ and depth $d$. Given parameters ($\varepsilon, \delta$), set
-$w$ = $\lceil \frac{e}{\varepsilon} \rceil$ and $d$ = $\lceil ln \frac{1}{\delta} \rceil $. Each entry of the array is initially zero.
-
-
-When a data item ($w,i$) arrives, meaning that the signature $w$ has the length $i$, then $i$ is added to one cell in each row; the counter is determined by $h_j$. Formally, set $\forall 1 \leq j \leq d$, then count[j,$h_j(i)$]
-
-
-The space used by Count-Min sketches is the array of $wd$ counts, which takes $wd$ words, and $d$ hash
-functions, each of which can be stored using 2 words when using the pairwise functions described in [27].
-
-Estimation procedure. Our estimation for $S \bigodot T $ = $min_j S_j \bigodot T_j $
-
-
-\begin{theorem}
-With a probability 1- $\delta$, The upper bound and lower bound of Composite signature estimation is
- $S \bigodot T $ and  $S \bigodot T $ + $\varepsilon |S| |T|$, respectively.
-\end{theorem}
-
-\begin{theorem}
-Our composite signature estimation estimates the lower and upper bounds of algorithms by keeping space $O(\frac{1}{\varepsilon} \log \frac{1}{\delta})$ and
-\end{theorem}
-
-\subsubsection{Estimation with length filters}
-
-When we use the CountMin sketch to estimate the effectiveness of length filter. It is to
-
-%We  demonstrate that the returned lower and upper bounds are correct, and then we analyze its space and time complexities.
+%\subsection{Count-Min estimation}
 %
-%Given a bucket with the sum $S$ and the number of lengths is $n$, the maximal frequency is $Max$, and the minimal frequency is $Min$, Suppose each element can join with other adjacent $\mu$ elements.
+%In order to quickly decide if the number of pairs after composite filters, we develop a count-min estimation to quickly determine which $n$ is good for filtering. See the following two examples for joins.
 %
-%Let $t = \frac{S}{M}$. Without the loss of generality, we assume that $t_1 \geq t_2$. Therefore, the upper bound of the join size is:
+%See the example in Figure \ref{fig:signature_example1}. In this example, $\theta$ = 0.8. If we use the 1-element signature, then we cannot prune away any string pair. In signature 2, we use 2-element signature, then there is no candidate. Therefore, the filtering power is better.
 %
-%$t_2 \times \mu M_1 M_2$ + $(t_1-t_2) \times \mu M_1$ = $\mu M_1 S_2$.
+%Further, when we consider the taxonomy ABCD ISA AGK, shown in Figure \ref{fig:signature_example1}. Then there is one answer pair (s1,t1). The new signature include the taxonomy ID 1.1 and 1  as shown.
 %
-%In other words:
+%\begin{figure}[h]
+%\centering
+%\includegraphics[scale=0.8]{figures/signature_example1}
+% \caption{Illustration to the difference of signature schemes}
+%\label{fig:signature_example1}
+%\end{figure}
 %
-%$max(S_1 \cdot M_2, S_2 \cdot M_1)$
+%A Count-Min (CM) sketch with parameters ( $\varepsilon, \delta$) is represented by a two-dimensional
+%array counts with width $w$ and depth $d$. Given parameters ($\varepsilon, \delta$), set
+%$w$ = $\lceil \frac{e}{\varepsilon} \rceil$ and $d$ = $\lceil ln \frac{1}{\delta} \rceil $. Each entry of the array is initially zero.
 %
-%The lower bound of the join size is
 %
-%$\mu \cdot (S_1+ S_2)$
+%When a data item ($w,i$) arrives, meaning that the signature $w$ has the length $i$, then $i$ is added to one cell in each row; the counter is determined by $h_j$. Formally, set $\forall 1 \leq j \leq d$, then count[j,$h_j(i)$]
 %
-%When we separate the data to two parts, we can try to make them the same for the sum.
 %
-%\begin{theorem} With at most $O(\log N)$ storage, we can compute the approximation with length filter. Each new data item needs $O(\log N)$ time to be processed.
+%The space used by Count-Min sketches is the array of $wd$ counts, which takes $wd$ words, and $d$ hash
+%functions, each of which can be stored using 2 words when using the pairwise functions described in [27].
+%
+%Estimation procedure. Our estimation for $S \bigodot T $ = $min_j S_j \bigodot T_j $
+%
+%
+%\begin{theorem}
+%With a probability 1- $\delta$, The upper bound and lower bound of Composite signature estimation is
+% $S \bigodot T $ and  $S \bigodot T $ + $\varepsilon |S| |T|$, respectively.
 %\end{theorem}
+%
+%\begin{theorem}
+%Our composite signature estimation estimates the lower and upper bounds of algorithms by keeping space $O(\frac{1}{\varepsilon} \log \frac{1}{\delta})$ and
+%\end{theorem}
+%
+%\subsubsection{Estimation with length filters}
+%
+%When we use the CountMin sketch to estimate the effectiveness of length filter. It is to
+
 
 
 \subsection{Extensions for flexible query thresholds} \label{subsec:flexible}
