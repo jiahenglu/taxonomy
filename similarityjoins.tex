@@ -2,21 +2,11 @@
 \section{String similarity joins with taxonomy}
 
 
-We extend our definition to composite relation. For example: ''U.S and China'' is a composite hyponym of ``California and Beijing''. Another example: ``Hong Kong and California'' and ``U.S.''. This is a partial hypernym relation, since only California is a hypernym of U.S.
-
-The sort-merge algorithm cannot work here.
-
-Labeling scheme and the join:
-
-If there are more than one string, then we can perform the verification after the filtering.
-
-
- Therefore, we propose a labeling scheme to process. Convert it to the ancestor-descendant joins
+In this section, we discuss how to use taxonomy on string similarity joins. For this purpose, we first extend the Jaccard similarity to utilize the taxonomy. Then we propose several algorithms and optimizations for the problem of similarity joins with taxonomy.
 
 
 
 \subsection{Similarity measures}
-
 
 
 We define the taxonomy similarity between two strings:
@@ -25,7 +15,13 @@ We define the taxonomy similarity between two strings:
 Given two token sets $S_1$ and $S_2$, and a taxonomy $\mathcal{T}$, we say an element (token) $e \in S_1 \bigcap_T S_2$, if $ \exists E \subseteq S_1$ and $e \in E$, and $\exists T \subseteq S_2$, s.t. $\exists (E,T) \in \mathcal{T}$.\end{definition}
 
 
-\noindent \textbf{Remark.}  Given two strings $s$ and $t$, it is clear that $|s \cap t| \leq min (|s|,|t|)$. But based on the taxonomy intersection, it is possible that $|s \cap_T t| > |s| $ or $|s \cap t| > |t| $. For example, s=``California'', t=``U.S.'', $|s \cap_T t|$ = 2.
+\noindent \textbf{Remark.}  Given two strings $s$ and $t$, it is clear that $|s \cap t| \leq min (|s|,|t|)$. But based on the taxonomy intersection, it is possible that $|s \cap_T t| > |s| $ or $|s \cap t| > |t| $. For example, s=``California'', t=``U.S.'', $|s \cap_T t|$ = 2. But it is still true that $|s \cap_T t| < |s \cup t|$
+
+We need to define a new similarity:
+
+Given a token set S which include two parts: $S_1$ and $S_2$, where $S_1$ contains only unique token and $S_2$ is the taxonomy token. Then the similarity between S and T is defined as
+
+$\frac{min(|S_2|,|T_s|)}{|S_1|+|T_1|+min(|S_2|,|T_s|)}$
 
 \begin{definition}[Taxonomy-based Jaccard]   Given two sets of tokens $S_1$ and $S_2$,  the taxonomy-based Jaccard (TJ) between $S_1$ and $S_2$ is that:
 
@@ -58,6 +54,12 @@ The time complexity of the TJ is $O(|s_1|+|s_2|+|n_1|+|n_2|)$, where $n_1$ (resp
 % \caption{Taxonomy graph example }
 %\label{fig:similaritygeaph}
 %\end{figure}
+
+We would formulate the string similarity join problem and develop the corresponding algorithms. Given two collections of strings $S$ and $T$, a taxonomy tree
+$\mathcal{T}$, and a similarity threshold $\theta$, a \textit{string
+  similarity join} finds all string pairs $(s, t) \in S \times T$,
+such that $JT(s,t,\mathcal{T})$ $>$ $\theta$, where \textit{JT} is
+ the Jaccard-taxonomy similarity functions defined above. Two join algorithms would be proposed in the following subsections.
 
 
 
@@ -111,6 +113,8 @@ For each tokens, there are two cases, that is, it contains a taxonomy word, say 
 
 Continue the above example, assume that $DE$ = 1.1. Note that $E \in s $, but $E$ does not belong to the signatures. Then the new three signatures:  \{A,C,1.1\}, \{B,C,1.1\}, \{A,B,1.1\}.
 
+\noindent \textbf{Composite signatures} Given a string $s$, a composite signature of $s$, denoted by C-Sig($s$) includes two types of elements $T$ and $N$, where $T$ is a set of tokens and $N$ is a set of T-nodes.
+
 Given an
 ordering $O = (U_1 , U_2 )$ of the token universe $U_1$ and $U_2$, where $U_1$ denotes the set of non-taxonomy tokens and $U_2$ is the set of taxonomy tokens. Let $P_s$ denote the smallest $\lceil(1-\theta)|s|\rceil$ tokens.
 
@@ -135,7 +139,7 @@ ordering $O = (U_1 , U_2 )$ of the token universe $U_1$ and $U_2$, where $U_1$ d
 %
 %\end{lem}
 
-A signature set $P$ for a string $s$ is a binary tuple ($T,N$), where $T$ is a set of tokens and $N$ is a set of taxonomy nodes. 
+A signature set $P$ for a string $s$ is a binary tuple ($T,N$), where $T$ is a set of tokens and $N$ is a set of taxonomy nodes.
 
 \begin{definition} [Signatures match strings]
 Given a signature set $P = (T,N)$ and a string $s$, we say $P$ matches $s$, denoted by $P \vdash s$ if $N \subseteq N^s$, where $N^s$ is a set of applicable taxonomy nodes of $s$ and  there exits a signature set $P' = (T',N')$ of $s$, s.t. $T \subseteq T'$.
@@ -151,7 +155,94 @@ If the threshold $\theta =$ 0.5, then  $\lceil (1-\theta) \times 5 \rceil$= 3 fo
 
 \subsubsection{Similarity join algorithm}
 
-We discuss the similarity join algorithm based on the above n-ary composite signature filters. 
+We discuss the similarity join algorithm based on the above n-ary composite signature filters.
+
+
+\begin{algorithm}
+{\bf Input}:  two collections of strings $S$ and $T$ and the threshold $\theta$ \\
+{\bf Output}: result pairs ($s,t$)$\in S \times T$, s.t. JT($s,t$)$> \theta$
+\begin{compactenum}[(1)]
+\item Find candidate pairs $C_1$ = \{$(s,t) |$  $P^s \vdash t$\};
+\item Find candidate pairs $C_2$ = \{$(s,t) |$  $P^t \vdash s$\};
+\item  $C= C_1 \cap C_2$;
+\item FOR EACH ($s,t$)$\in C$
+\item RETURN all pairs s.t. $JT(s,t) > \theta$
+\end{compactenum}
+\caption{String joins with taxonomy}
+\label{alg:exactjoin}
+\end{algorithm}
+
+For each table, we can generate four inverted lists for strings: (1) a list $L_I$ for tokens where the signatures of strings contain only tokens; (2) a list $L_{II}$ for taxonomy nodes where the signatures of strings contain only nodes; (3) a list $L_{III}$ for tokens where the signatures of strings contain both tokens and nodes; (4)  a list $L_{IV}$ for nodes where the signatures of strings contain both tokens and nodes.
+
+
+\begin{algorithm}
+{\bf Input}: two collection of strings $S$ and $T$ and their corresponding inverted lists $L_I^S$,  $L_{II}^S$, $L_{III}^S$, $L_{IV}^S$, $L_N^T$ \\
+{\bf Output}: string candidate pairs \{$(s,t) |$  $P^s \vdash t$, $s \in S$ and $t \in T$\}
+\begin{compactenum}[(1)]
+\item  $C_1$=$\displaystyle\bigcup_{g \in L_I^S \cap L_I^t} (L_I^s(g) \times L_I^t(g)) $;
+\item  $C_2$=$\displaystyle\bigcup_{n \in L_{II}^S \cap L_N^t} (L_{II}^s(n) \times L_N^t(n)) $;
+\item  $C_3$=$\displaystyle\bigcup_{g \in L_{III}^S \cap L_{III}^t} (L_{III}^s(g) \times L_{III}^t(g)) $;
+\item  $C_4$=$\displaystyle\bigcup_{n \in L_{IV}^S \cap L_N^t} (L_{IV}^s(n) \times L_N^t(n)) $;
+\item   Return $C_1 \cup C_2 \cup (C_3 \cap C_4)$;
+
+\end{compactenum}
+\caption{String candidate pairs}
+\label{alg:exactjoin}
+\end{algorithm}
+
+\begin{table*}[t]
+\centering
+\begin{tabular}{|@{\hspace{1mm}}c@{\hspace{1mm}}|@{\hspace{1mm}}c@{\hspace{1mm}}|}
+%{|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|}
+%|c|m{6cm}|
+\hline
+ \textbf{Symbols} & \textbf{Definitions}  \\
+  \hline \hline
+
+  $L_I(g)$ &    $\forall s \in L_I(g)$,  s.t. $\exists  R  \in C$-$Sig(s)$, $R$ contains only tokens and $g \in R$ \\
+
+   $L_{II}(n)$ & $\forall$ $s \in L_{II}(n)$, s.t. $\exists  R  \in C$-$Sig(s)$, $R$ contains only T-nodes and $n \in R$    \\
+
+   $L_{III}(g)$ & $\forall$ $s \in L_{III}(g)$, s.t.  $\exists R  \in C$-$Sig(s)$, $R$ contains both tokens and T-nodes, $g \in R$    \\
+
+  $L_{IV}(n)$ &  $\forall s \in L_{IV}(n)$, s.t. $\exists R  \in C$-$Sig(s)$, $R$ contains tokens and T-nodes and $n \in R$    \\
+
+$L_{N}(n)$ &  $\forall s \in L_{N}(n)$, s.t. $n$ is an applicable T-node of $s$   \\
+
+  \hline
+\end{tabular}
+\caption{Summary of definitions of various inverted lists}
+\label{tab:symbols}
+\end{table*}
+
+
+\begin{table*}[t]
+\centering
+\begin{tabular}{|@{\hspace{1mm}}c@{\hspace{1mm}}|@{\hspace{1mm}}c@{\hspace{1mm}}|@{\hspace{1mm}}c@{\hspace{1mm}}|@{\hspace{1mm}}c@{\hspace{1mm}}|}
+%{|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|}
+%|c|m{6cm}|
+\hline
+ \textbf{ID} & \textbf{Strings} &  \textbf{Signatures} &    \textbf{C-Sig} \\
+  \hline \hline
+
+  $q_1$ & Suwon and Seoul in South Korean  &  (Suwon, and), (Suwon Seoul), (and, Seoul)  & () \\
+
+   $q_2$ & Seoul, South Korean in Asia  & (Seoul, South), (Seoul, Korean), (Seoul, Korean) &   3.1.1.1, in \\
+
+   $q_3$ &  two states: California and Michigan, U.S. &  (two, states), (two, California), (states, California) & (two, states), (two, 2.1.1), (states, 2.1.1)  \\
+   $q_4$ & two cities: Detroit and Los angles & (two, cities), (two, Detroit), (cities, Detroit) &  (two, cities), (two, 2.1.2.1), (cities, 2.1.2.1) \\
+
+
+  \hline
+\end{tabular}
+\caption{An example to illustrate the string similarity join algorithm}
+\label{tab:example}
+\end{table*}
+
+
+\begin{example} We use Table as an example to illustrate the algorithm.
+
+\end{example}
 
 \subsubsection{Comparison with other schemes}
 
@@ -177,7 +268,7 @@ We discuss the similarity join algorithm based on the above n-ary composite sign
 
   \hline
 \end{tabular}
-\caption{Time and  I/O cost and performance ($\bar{d}$: the average degree)}
+\caption{Time and  I/O cost and performance}
 \label{tab:complexity}
 \end{table}
 

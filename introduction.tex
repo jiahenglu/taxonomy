@@ -26,7 +26,7 @@ In recent years, we have witnessed the emergence of various solutions to improve
 The traditional similarity functions consider only syntactic similarities, e.g., number of common
 words or $q$-grams. But there are many important cases where syntactically different
 strings can represent the same real-world object. For example,
-``\textsf{Bill}'' is a short form of ``\textsf{William}''.  Given two collections of strings,  the synonym-based similarity function can utilize the available synonyms to find string pairs which are semantically similar. While those methods improve the effectiveness of string joins, a synonym dictionary does not contain information such as
+``\textsf{Bill}'' is a short form of ``\textsf{William}'', and ``\textsf{ICDE}'' is an abbreviation of  ``\textsf{International Conference on Data Engineering}''.  Given two collections of strings,  the synonym-based similarity function can utilize the available synonyms to find string pairs which are semantically similar. While those methods improve the effectiveness of string joins, a synonym dictionary does not contain information such as
 ``\textsf{Helsinki is a city of Finland}'', or `\textsf{`Apple 6 Plus is a new model of iPhone}''. Still, term pairs such as ``\textsf{Helsinki}'' and ``\textsf{Finland}'', ``\textsf{Apple 6 Plus}'' and ``\textsf{iPhone}''  have strong semantic correlations.
 
 
@@ -48,7 +48,7 @@ the IS-A relation could be any descendant of it in the tree. Figure
 
 
 To support string joins with taxonomy, we can extend the SQL language by adding a new predicate ``IS-A''. For example,
-consider two tables in Figure \ref{fig:twotables}, which contain the information about the products of cellphones.  Consider the following SQL script:
+consider two tables in Figure \ref{fig:twotables}, which contains the information about the products of cellphones.  Consider the following SQL script:
 
 \vspace{2mm}
 
@@ -59,10 +59,11 @@ consider two tables in Figure \ref{fig:twotables}, which contain the information
  \vspace{2mm}
 
 
-\noindent which shows a simple SQL script that
-performs the IS-A join between two tables. For example, in the column of area, California is a state of U.S. and Shenzhen is a city of China.
+\noindent which performs the two IS-A joins between two columns: ``\textsf{product}'' and ``\textsf{area}'' (e.g. ``Galaxy S6'' is a model of ``Samsung'' and ``Seoul'' is a city of ``Korea'').
 
-For the approximate joins, the brute-force algorithm that enumerates every string pair and checks whether the two strings in the pair are similar is rather expensive. To alleviate this problem, many algorithms have been proposed in the recent two decades. One widely-adopted technique employs a filter-verification framework, which includes two steps: (1) Filter step: devising effective filtering algorithms to prune large numbers of dissimilar pairs and generating a set of candidate pairs; and (2) Verification step: verifying each candidate pair by computing
+The exact join can be performed with optimal algorithms. 
+
+For the approximate joins, the first step is to define a new similarity function. The existing function the brute-force algorithm that enumerates every string pair and checks whether the two strings in the pair are similar is rather expensive. To alleviate this problem, many algorithms have been proposed in the recent two decades. One widely-adopted technique employs a filter-verification framework, which includes two steps: (1) Filter step: devising effective filtering algorithms to prune large numbers of dissimilar pairs and generating a set of candidate pairs; and (2) Verification step: verifying each candidate pair by computing
 the real similarity and outputting the final results. Filtering algorithms in the first step play an important role
 in the framework. Most of existing filtering algorithms employ a signature-based technique, which generates signatures for each string such that if two strings are similar, their signatures must have overlaps. Thus the signature-based technique can prune string pairs that have no common signature.
 
