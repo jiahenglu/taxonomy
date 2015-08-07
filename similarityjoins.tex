@@ -1,33 +1,43 @@
 
-\section{String similarity joins with taxonomy}
+\section{Extended taxonomy similarity (ETS) functions and algorithms}
+
+From the TS funciton in the previous section, we saw the utilization of taxonomy trees for the semantic measurement of string similarity, and this funciton are more efective than the traditional syntactic similarity. However, the TS similarity function needs to match the whole string with a single node in the taxonomy tree. But in many cases, such as one record ``California and Michigan'', we cannot match the string with only one term. Therefore, in this section we extend the similarity function to cope with more complicated situations.
 
 
-In this section, we discuss how to use taxonomy on string similarity joins. For this purpose, we first extend the Jaccard similarity to utilize the taxonomy. Then we propose several algorithms and optimizations for the problem of similarity joins with taxonomy.
 
 
 
-\subsection{Similarity measures}
+
+\subsection{ETS functions}
 
 
-We define the taxonomy similarity between two strings:
-
-\begin{definition}[Taxonomy intersection]
-Given two token sets $S_1$ and $S_2$, and a taxonomy $\mathcal{T}$, we say an element (token) $e \in S_1 \bigcap_T S_2$, if $ \exists E \subseteq S_1$ and $e \in E$, and $\exists T \subseteq S_2$, s.t. $\exists (E,T) \in \mathcal{T}$.\end{definition}
 
 
-\noindent \textbf{Remark.}  Given two strings $s$ and $t$, it is clear that $|s \cap t| \leq min (|s|,|t|)$. But based on the taxonomy intersection, it is possible that $|s \cap_T t| > |s| $ or $|s \cap t| > |t| $. For example, s=``California'', t=``U.S.'', $|s \cap_T t|$ = 2. But it is still true that $|s \cap_T t| < |s \cup t|$
+\begin{definition}[intersection weight]
+Given two token sets $S$ and $T$, and a taxonomy $\mathcal{T}$, we define  an intersection weight $w(e)$ for an element (token) $e \in S$,  if $e \in S_1 \bigcap S_2$, then $w(e)$ = 1; else
+ 
+ \begin{equation}
+w(e)=  \max \limits_{e \subseteq S' \subseteq S, T' \subseteq T} ST(S',T',\mathcal{T})
+\end{equation} 
 
-We need to define a new similarity:
+\end{definition}
 
-Given a token set S which include two parts: $S_1$ and $S_2$, where $S_1$ contains only unique token and $S_2$ is the taxonomy token. Then the similarity between S and T is defined as
 
-$\frac{min(|S_2|,|T_s|)}{|S_1|+|T_1|+min(|S_2|,|T_s|)}$
+%\noindent \textbf{Remark.}  Given two strings $s$ and $t$, it is clear that $|s \cap t| \leq min (|s|,|t|)$. But based on the taxonomy intersection, it is possible that $|s \cap_T t| > |s| $ or $|s \cap t| > |t| $. For example, s=``California'', t=``U.S.'', $|s \cap_T t|$ = 2. But it is still true that $|s \cap_T t| < |s \cup t|$
 
-\begin{definition}[Taxonomy-based Jaccard]   Given two sets of tokens $S_1$ and $S_2$,  the taxonomy-based Jaccard (TJ) between $S_1$ and $S_2$ is that:
 
+We define the taxonomy similarity between two strings as follows:
+
+
+\begin{definition}[Extended Taxonomy Similarity]   Given two sets of tokens $S$ and $T$,  Let $W_S$= $\sum_{\forall s_i \in S} e(s_i)$ and $W_T$= $\sum_{ \forall t_i \in T} e(t_i)$. Let $Z_S$ and $Z_T$ denote the size of the set of tokens whose weights are zero in $S$ and $T$, respectively.
 \begin{equation}
-TJ(S_1,S_2)=  \frac{(S_1 \bigcap_T S_2) \bigcup (S_1 \bigcap S_2) }{S_1 \bigcup S_2}
+ETS(S,T)=  \frac{min(W_S,W_T)}{min(W_S,W_T)+Z_S+Z_T}
 \end{equation} \end{definition}
+
+
+
+
+There are two properties about this extended similarity: (1) \textit{Consistency with Jaccard}: if there are no taxonomy, the  similarity is the same as the Jaccard similarity; (2) \textit{dissimilarity preservation}: given two strings s and t, suppose that the non-overlapping terms (for tokens and taxonomy between s and t is N, then $ETS(s,t) \leq 1- \frac{|N|}{|S|}$. That means, the similarity between two strings cannot be too large if they have enough number of dissimilarity tokens. We can exploit this crucial property for our filtering strategy later.
 
 \begin{algorithm}
 {\bf Input}: two strings $s_1$ and $s_2$, a taxonomy $\mathcal{T}$ \\
@@ -54,12 +64,6 @@ The time complexity of the TJ is $O(|s_1|+|s_2|+|n_1|+|n_2|)$, where $n_1$ (resp
 % \caption{Taxonomy graph example }
 %\label{fig:similaritygeaph}
 %\end{figure}
-
-We would formulate the string similarity join problem and develop the corresponding algorithms. Given two collections of strings $S$ and $T$, a taxonomy tree
-$\mathcal{T}$, and a similarity threshold $\theta$, a \textit{string
-  similarity join} finds all string pairs $(s, t) \in S \times T$,
-such that $JT(s,t,\mathcal{T})$ $>$ $\theta$, where \textit{JT} is
- the Jaccard-taxonomy similarity functions defined above. Two join algorithms would be proposed in the following subsections.
 
 
 
@@ -225,9 +229,9 @@ $L_{N}(n)$ &  $\forall s \in L_{N}(n)$, s.t. $n$ is an applicable T-node of $s$ 
  \textbf{ID} & \textbf{Strings} &  \textbf{Signatures} &    \textbf{C-Sig} \\
   \hline \hline
 
-  $q_1$ & Suwon and Seoul in South Korean  &  (Suwon, and), (Suwon Seoul), (and, Seoul)  & () \\
+  $q_1$ & Suwon and Seoul in South Korea  &  (Suwon, and), (Suwon Seoul), (and, Seoul)  & (3.1.1.2, and), (3.1.1.2, 3.1.1.1), (and, 3.1.1.1) \\
 
-   $q_2$ & Seoul, South Korean in Asia  & (Seoul, South), (Seoul, Korean), (Seoul, Korean) &   3.1.1.1, in \\
+   $q_2$ & Seoul, South Korea in Asia  & (Seoul, South), (Seoul, Korea), (South, Korea) &   (3.1.1.1, 3.1), (3.1.1.1, 3.1), (3.1, 3.1) \\
 
    $q_3$ &  two states: California and Michigan, U.S. &  (two, states), (two, California), (states, California) & (two, states), (two, 2.1.1), (states, 2.1.1)  \\
    $q_4$ & two cities: Detroit and Los angles & (two, cities), (two, Detroit), (cities, Detroit) &  (two, cities), (two, 2.1.2.1), (cities, 2.1.2.1) \\
