@@ -41,21 +41,13 @@ conference titles  (\textbf{CONF}), and gene/protein data
 (\textbf{SPROT}). These datasets differ from each other in terms of rule-number, rule-complexity, data-size and string-length. Our goal in choosing these diverse sources is to understand the usefulness of algorithms in different real world environments.
 
 \smallskip
-\noindent \textbf{{USPS}}: We downloaded common person names, street names,
-city names, states, and zip codes from the United States Postal
-Service website ({\footnotesize http://www.usps.com}). We then generated
-one million records, each of which contains a person name, a street
-name, a city name, a state, and a zip code. USPS also publishes
-extensive information about the format of US addresses, from which we
-obtained 284 synonym pairs. The synonym pairs covers a wide range of alternate
-representations of common strings, e.g. street $\rightarrow$ st.
+\noindent \textbf{{Consensus data}}: Extraction was done by Barry Becker from the 1994 Census database. native-country: Include 32561 instances, we can perform the similarity joins on multiple column, including countries, occupation, marital-status, education and workclass. The feature of this dataset is to perform the similarity join against multiple columns.
 
-
-\noindent \textbf{{Affiliations data}}: We collected 10,000 affiliations of authors for computer science.
+\noindent \textbf{{Academic data}}: We collected 10,000 affiliations of authors for computer science.
 We build a taxonomy tree which include the country and city and the university names.
 
 
-\noindent \textbf{{Life science and Genome data}}: Designing data integration solutions in the context of the Life Sciences
+\noindent \textbf{{Life science data}}: Designing data integration solutions in the context of the Life Sciences
 must take into account the specific properties of the domain [3,
 4]. These are related to (i) the way biological data is produced
 and stored within biological databases (BDB), (ii) the fact that
@@ -81,7 +73,7 @@ than 1,200 BDBs are publicly available. This led to the call
 for DI systems with extreme scalability in the number of
 sources. However, in reality the usage of these databases is
 Zipf-distributed [2], and there are only a few projects that
-work with more than, say, 20 different data sources. 
+work with more than, say, 20 different data sources.
 We obtained one million gene/protein records
 from the Expasy website ({\footnotesize http://www.expasy.ch/sprot}).
 Each record contains an identifier (ID) and its name.
