@@ -36,9 +36,9 @@ highlighted in various applications for biomedical
 concept and knowledge extraction from text [11].
 
 
-We use three datasets: US addresses (\textbf{USPS}),
-conference titles  (\textbf{CONF}), and gene/protein data
-(\textbf{SPROT}). These datasets differ from each other in terms of rule-number, rule-complexity, data-size and string-length. Our goal in choosing these diverse sources is to understand the usefulness of algorithms in different real world environments.
+We use three datasets: Consensus data (\textbf{Consensus}),
+Academic data  (\textbf{Academy}), and Life science data
+(\textbf{Life}). These datasets differ from each other in terms of rule-number, rule-complexity, data-size and string-length. Our goal in choosing these diverse sources is to understand the usefulness of algorithms in different real world environments.
 
 \smallskip
 \noindent \textbf{{Consensus data}}: Extraction was done by Barry Becker from the 1994 Census database. native-country: Include 32561 instances, we can perform the similarity joins on multiple column, including countries, occupation, marital-status, education and workclass. The feature of this dataset is to perform the similarity join against multiple columns.
@@ -83,11 +83,27 @@ Each record contains an identifier (ID) and its name.
 In this dataset, each ID has $5\sim22$ synonyms. We generated 10,000 synonym rules describing gene/protein
 equivalent expressions.
 
-In each dataset we subtracted from the scores their minimum,
-so that the smallest score is 0, without affecting the
-ordering. The minimum is then added back at query time.
 
+\begin{table}[t]
+\centering
+\begin{tabular}{|@{\hspace{1mm}}c@{\hspace{1mm}}|@{\hspace{1mm}}c@{\hspace{1mm}}|@{\hspace{1mm}}c@{\hspace{1mm}}|@{\hspace{1mm}}c@{\hspace{1mm}}|}
+%{|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|}
+%|c|m{6cm}|
+\hline
+ \textbf{Dataset} & \textbf{\# of strings} &  \textbf{string length} & \textbf{Taxonomy size} \\
+  \hline \hline
 
+  Consensus & 10,000 & 5 & 2,000 \\
+
+   Academy & 10,000 & 5 &  2,000 \\
+
+   Life & 10,000  & 5 & 2,000  \\
+
+  \hline
+\end{tabular}
+\caption{Time and  I/O cost and performance}
+\label{tab:data}
+\end{table}
 
 
 \begin{figure}
