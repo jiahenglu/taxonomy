@@ -5,39 +5,33 @@ From the TS funciton in the previous section, we saw the utilization of taxonomy
 
 
 
-
-
-
 \subsection{ETS functions}
 
+We define a new similarity function, which has the following four properties:
 
+(1)\textbf{ Beneficial}, that means the new similarity is always greater than the one without considering the taxonomy. That is, using taxonomy will not hurt the similarity in all cases; $f(S,T,\mathcal{T} ) \geq  f(S,T) $
 
+(2) \textbf{Upward compatible}. That means when the taxonomy is updated with the insertion of the elements, the similarity always increases. That is, richer semantics will not hurt the similarity in all cases; $f(S,T,\mathcal{T} ) \leq  f(S,T, \mathcal{T'}) $ if $\mathcal{T}$ contains more elements than $\mathcal{T'}$.
 
-\begin{definition}[intersection weight]
-Given two token sets $S$ and $T$, and a taxonomy $\mathcal{T}$, we define  an intersection weight $w(e)$ for an element (token) $e \in S$,  if $e \in S_1 \bigcap S_2$, then $w(e)$ = 1; else
- 
- \begin{equation}
-w(e)=  \max \limits_{e \subseteq S' \subseteq S, T' \subseteq T} ST(S',T',\mathcal{T})
-\end{equation} 
+(4) \textbf{Consistent with JS}, if there is only one element in S and T, then the new similarity function should be the same as the previous JS function $f(S,T,\mathcal{T} ) =  JS(S,T,\mathcal{T}) $ if $|S|=|T|$=1.
 
-\end{definition}
+The overall similarity is computed by
 
-
-%\noindent \textbf{Remark.}  Given two strings $s$ and $t$, it is clear that $|s \cap t| \leq min (|s|,|t|)$. But based on the taxonomy intersection, it is possible that $|s \cap_T t| > |s| $ or $|s \cap t| > |t| $. For example, s=``California'', t=``U.S.'', $|s \cap_T t|$ = 2. But it is still true that $|s \cap_T t| < |s \cup t|$
-
-
-We define the taxonomy similarity between two strings as follows:
-
-
-\begin{definition}[Extended Taxonomy Similarity]   Given two sets of tokens $S$ and $T$,  Let $W_S$= $\sum_{\forall s_i \in S} e(s_i)$ and $W_T$= $\sum_{ \forall t_i \in T} e(t_i)$. Let $Z_S$ and $Z_T$ denote the size of the set of tokens whose weights are zero in $S$ and $T$, respectively.
 \begin{equation}
-ETS(S,T)=  \frac{min(W_S,W_T)}{min(W_S,W_T)+Z_S+Z_T}
-\end{equation} \end{definition}
+\frac{Intersection}{|s_1|+|s_2| - Intersection}
+\end{equation}
+
+ where $|s_1|+|s_2|$  meas the the total number of elements in two sets.
 
 
+The intersection size is computed by the maximum weight matching in bipartite graphs. The weight is calculated by the binary similarity of any two elements. The intersection size may be a real number, not always an integer now.
+
+The algorithm of the maximum weight matching in bipartite graphs is called the Hungarian method. The time analysis of the algorithm is $O(n^3)$.
 
 
-There are two properties about this extended similarity: (1) \textit{Consistency with Jaccard}: if there are no taxonomy, the  similarity is the same as the Jaccard similarity; (2) \textit{dissimilarity preservation}: given two strings s and t, suppose that the non-overlapping terms (for tokens and taxonomy between s and t is N, then $ETS(s,t) \leq 1- \frac{|N|}{|S|}$. That means, the similarity between two strings cannot be too large if they have enough number of dissimilarity tokens. We can exploit this crucial property for our filtering strategy later.
+Therefore, the  time analysis for the overall cost to compute two strings is $O(n^3+m^2)$, where $m$ is the sum of the length of prefix labels of words in two strings.
+
+
 
 \begin{algorithm}
 {\bf Input}: two strings $s_1$ and $s_2$, a taxonomy $\mathcal{T}$ \\
@@ -53,7 +47,6 @@ There are two properties about this extended similarity: (1) \textit{Consistency
 \label{alg:exactjoin}
 \end{algorithm}
 
-The time complexity of the TJ is $O(|s_1|+|s_2|+|n_1|+|n_2|)$, where $n_1$ (resp. $n_2$) denotes all applicable taxonomy nodes for string $s_1$  (resp. $n_2$). Assume that the preprocessing step finds the taxonomy relation for each string. Then the online algorithm only needs to find the matching IS-A relation between two strings to compute the intersection set with taxonomy.
 
 \subsection{String similarity join algorithms}
 
@@ -66,16 +59,10 @@ The time complexity of the TJ is $O(|s_1|+|s_2|+|n_1|+|n_2|)$, where $n_1$ (resp
 %\end{figure}
 
 
-
-\textbf{Baseline algorithm}. We can use the similar algorithm as that in string exact join with taxonomy. And then use these candidate for filtering. But this baseline algorithm has one limitation that there are too many candidates. Then we show how to perform the second filtering to reduce the number of candidate pairs.
-
 \textbf{Signature-based index}. Given a string s with length $|s|$, then the size of signature is $\lceil (1-\theta)|s| \rceil$. But if the signatures involve the taxonomy, then we cannot make this argument.
 
 But if in some real cases, we select the word from taxonomy as signatures. Therefore we need to compute a relax maximum similarity. In this case, we still do not need to retrieve the whole string to compute real similarity.
 
-Given as string $s$, assume that its applied taxonomy node is $n$.
-
-In this paper, we propose a new index which combine a signature filters and a length together with a bit-matrix, which extends bloom filter to two dimensions.
 
 In the literature, the current "modus operandi" is called \textit{prefix filter}, which is based on the intuition that if two canonicalized records are similar, some fragments of them should overlap with each other, as otherwise the two records
 won't have enough overlap. This intuition can be formally captured by the prefix-filtering
@@ -87,6 +74,30 @@ order of $O$.   If Jaccard($s, t$) $> \theta$, then the first $\lceil(1-\theta)|
 tokens of $s$ and the first $\lceil(1-\theta)|t|\rceil$ smallest
 tokens of $t$  must share at least one token.
 \end{lem}
+
+But this method cannot be used in our case of similarity. We need to develop a new method to produce the signature.
+
+Given one set with the expansion \{$n_1$,$n_2$,...,$n_t$\}, we sort it first by the decreasing order of the string. If the two strings are the same length, then by the increasing order of lexicographical order. In this way, we ensure that the node with high selectivity is always selected.
+
+Then if there is no elements for $n_i$ $ i \in $ 1 to $n$, what is the maximal intersection results.
+
+For example, consider a string set \{1.3, 1.4.1, 2.1\}. Then we produce the full set \{1, 1.3, 1.4, 1.4.1, 2, 2.1\}. We sort it according to the above order: \{1.4.1, 1.3, 1.4, 2.1, 1, 2\}.
+
+Without 1.4.1, the maximal intersection size is $2\frac{2}{3}$;
+
+Without 1.4.1 and 1.3, the maximal intersection size is $\frac{1}{2}+1+\frac{2}{3}$=$2\frac{1}{6}$;
+
+Without 1.4.1, 1.3, 1.4, the maximal intersection size is $1+\frac{1}{2}+\frac{1}{3}$=$1\frac{5}{6}$; It is important to note that we should use the double 1 here. so this is not a problem of maximal weight matching. We can the greedy match for this case.
+
+Without 1.4.1, 1.3, 1.4 and 2.1, the maximal intersection size is $\frac{1}{2}+\frac{1}{2}+\frac{1}{3}$=$1\frac{1}{3}$;
+
+Without 1.4.1, 1.3, 1.4, 2.1 and 1, the maximal intersection size is $\frac{1}{2}$;
+
+Without 1.4.1, 1.3, 1.4, 2.1, 1 and 2, the maximal intersection size is $0$;
+
+It is very important to note that we use the greedy algorithm to compute the maximal intersection number.
+
+After that, we select the maximal number which is greater than $\theta \cdot |s|$ as the signature set.
 
 \subsubsection{N-ary prefix scheme}
 

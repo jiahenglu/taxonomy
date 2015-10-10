@@ -10,9 +10,14 @@ most notable efforts, which attempt to derive a taxonomy
 from Wikipedia categories. With more web data, Probase
 [26] aims at building a unified taxonomy of worldly facts.
 
+In recent years, we have witnessed the emergence of various efforts to enhance the effectiveness of string similarity joins by using synonyms \cite{conf/sigmod/LuLWLW13,conf/icde/ArasuCK08,conf/cpm/BarbayGMR06,conf/vldb/ArvindSR09}.
+The traditional similarity functions consider only syntactic similarities, e.g., number of common
+words or $q$-grams. But there are many important cases where syntactically different
+strings can represent the same real-world object. For example,
+``\textsf{Bill}'' is a short form of ``\textsf{William}'', and ``\textsf{ICDE}'' is an abbreviation of  ``\textsf{International Conference on Data Engineering}''.  Given two collections of strings,  synonym-based similarity functions can utilize the available synonyms to find string pairs which are semantically similar. While those methods improve the effectiveness of string joins, a synonym dictionary does not contain information such as
+``\textsf{Helsinki is the capital of Finland}'', or `\textsf{`Apple 6 Plus is a new model of iPhone}''. Still, term pairs such as ``\textsf{Helsinki}'' and ``\textsf{Finland}'', ``\textsf{Apple 6 Plus}'' and ``\textsf{iPhone}''  have strong semantic correlations.
 
- The contributions of this paper \cite{journals/vldb/MartinenghiT14}   are the following: a simple but solid framework for embedding taxonomies
-into relational databases.
+
 
 Taxonomies are is-a hierarchies of concepts, topics, or keywords. Since they represent ontology specializations, they may be
 used to provide meaningful knowledge representations and, thus, support users in understanding the semantic meaning of a

@@ -16,47 +16,33 @@
 \end{figure}
 
 
-A string join, which finds all string pairs between two input collections, is an essential operation in many applications, such as  data integration \cite{conf/sigmod/Sarawagi04}, data cleansing \cite{conf/vldb/ArasuGK06,journals/www/LiJM06} and record linkage \cite{books/Winkler99}. In practice,  multiple representations
-arise due to a variety of reasons such as misspellings
-caused by typographic errors and different formatting conventions
-used by data sources.  A string similarity join is an important operation for reconciling different
+A string join, which finds all string pairs between two input collections, is an essential operation in many applications, such as  data integration \cite{conf/sigmod/Sarawagi04}, data cleansing \cite{conf/vldb/ArasuGK06,journals/www/LiJM06} and record linkage \cite{books/Winkler99}. In practice, the same object/entity may have different representation  due to a variety of reasons such as misspellings
+caused by typographic errors, different formatting conventions
+used by data sources, such as synonym, abbreviation and acronym. Hence, a string similarity join is an important operation for reconciling different
 representations of an entity. A large number of different similarity functions such as Levenshtein distance~\cite{conf/sigmod/WangLF12},
 Hamming distance~\cite{conf/spire/Kondrak05}, Episode
 distance~\cite{conf/ijcai/CohenRF03}, Cosine
 metric~\cite{journals/ipm/SaltonB88}, Jaccard
-Coefficient~\cite{conf/icde/ChaudhuriGK06,conf/icde/LiLL08}, and Dice
-similarity~\cite{conf/www/BayardoMS07} have been traditionally used in similarity joins. It is well known
+Coefficient~\cite{conf/icde/ChaudhuriGK06,conf/icde/LiLL08}, JaccT \cite{conf/icde/ArasuCK08} and SE \cite{conf/sigmod/LuLWLW13} have been proposed in the literature. It is well known
 that no single similarity function is universally applicable
 across all domains and scenarios.
 
 In this paper, we investigate a novel problem to exploit taxonomy with string similarity joins. In principle, the taxonomy presents a general purpose strategy to improve the accuracy of string joins by enriching data with semantics-based knowledge. For example, Figure \ref{fig:taxonomyexample} shows an example of geographical taxonomy.
 
-Based on the taxonomy, we can measure the similarity of string in a semantic way. For example, consider two pairs of strings California Seoul, and California Michigan. Intuitively, the similarity of s1 and s2 is greater than s1 and s3, because Los Angles and San Francisco are two cities in the same state (i.e. California) and the same country (i.e. U.S.). One method is to add the path from the root to the words and use the Jaccard coefficint to measure. 
-
-The taxonomy string joins have wide applications in data integration and data cleansing. For example, consider Figure \ref{fig:twotables}.
-
-Contribution of this paper:
-
-(1) New similarity functions
+Based on the taxonomy, we can measure the similarity of string in a semantic way. For example, consider two pairs of strings California Seoul, and California Michigan. Intuitively, the similarity of s1 and s2 is greater than s1 and s3, because Los Angles and San Francisco are two cities in the same state (i.e. California) and the same country (i.e. U.S.). One method is to add the path from the root to the words and use the Jaccard coefficient to measure.
 
 
 
+We give several applications to shed light on the importance of the  string similarity matching with taxonomy.
+
+\begin{itemize}
+  \item Data Integration For example, consider Figure \ref{fig:twotables}.
+  \item Data mining More applications can be found in areas such as term classification and term clustering.
+  \item Data cleaning data cleaning needs to find from a collection of entities those similar to a given entity. A typical query is ``Find records related to the product of Sumsung cellphone'', and an entity of ``Glaxy S6'' should be found and returned.
+  \item Information extraction Find all geological entity in U.S. Then a new similarity measure based on a geological taxonomy can handle term variation and discover more location of interests
+\end{itemize}
 
 
- In practice, a real-world entity has more than one representation in the data
-collection; for example, the same address could be encoded using
-different strings in different collections. Multiple representations
-arise due to a variety of reasons such as misspellings
-caused by typographic errors and different formatting conventions
-used by data sources. Therefore, a string similarity join is an important operation for reconciling different
-representations of an entity. A large number of different similarity functions such as Levenshtein distance~\cite{conf/sigmod/WangLF12},
-Hamming distance~\cite{conf/spire/Kondrak05}, Episode
-distance~\cite{conf/ijcai/CohenRF03}, Cosine
-metric~\cite{journals/ipm/SaltonB88}, Jaccard
-Coefficient~\cite{conf/icde/ChaudhuriGK06,conf/icde/LiLL08}, and Dice
-similarity~\cite{conf/www/BayardoMS07} have been traditionally used in similarity joins. It is well known
-that no single similarity function is universally applicable
-across all domains and scenarios.
 
 
 %  Conceptually, there are two cases of string joins: \textit{exact-joins} and \textit{approximate-joins}. Exact joins mean that two matching strings are exactly the same, while approximate joins tolerate certain difference between two strings and the similarity between two strings is measured by a similarity function, such as  Levenshtein distance~\cite{conf/sigmod/WangLF12},
@@ -66,12 +52,6 @@ across all domains and scenarios.
 %Coefficient~\cite{conf/icde/ChaudhuriGK06,conf/icde/LiLL08}, and Dice
 %similarity~\cite{conf/www/BayardoMS07}.
 
-In recent years, we have witnessed the emergence of various efforts to enhance the effectiveness of string similarity joins by using synonyms \cite{conf/sigmod/LuLWLW13,conf/icde/ArasuCK08,conf/cpm/BarbayGMR06,conf/vldb/ArvindSR09}.
-The traditional similarity functions consider only syntactic similarities, e.g., number of common
-words or $q$-grams. But there are many important cases where syntactically different
-strings can represent the same real-world object. For example,
-``\textsf{Bill}'' is a short form of ``\textsf{William}'', and ``\textsf{ICDE}'' is an abbreviation of  ``\textsf{International Conference on Data Engineering}''.  Given two collections of strings,  synonym-based similarity functions can utilize the available synonyms to find string pairs which are semantically similar. While those methods improve the effectiveness of string joins, a synonym dictionary does not contain information such as
-``\textsf{Helsinki is the capital of Finland}'', or `\textsf{`Apple 6 Plus is a new model of iPhone}''. Still, term pairs such as ``\textsf{Helsinki}'' and ``\textsf{Finland}'', ``\textsf{Apple 6 Plus}'' and ``\textsf{iPhone}''  have strong semantic correlations.
 
 
 In this paper, we assume that we already have complete
@@ -91,19 +71,10 @@ the IS-A relation could be any descendant of it in the tree. Figure
 
 
 
-To support string joins with taxonomy in databases, we can extend the SQL language by adding a new predicate ``IS-A''. For example,
-consider two tables in Figure \ref{fig:twotables} about the products of cellphones.  Consider the following SQL script:
-
-\vspace{2mm}
-
-\noindent \textsf{Select T1.price, T2.price} \\
-\noindent \textsf{ From T1 and T2} \\
-\noindent   \textsf{Where T2.product \textbf{IS-A} T1.product and T2.area \textbf{IS-A} T1.area}
-
- \vspace{2mm}
 
 
-\noindent which selects the prices of phones from two tables by performing the two IS-A joins against ``\textsf{product}'' and ``\textsf{area}'' columns (e.g. ``\textsf{Galaxy S6}'' is a model of ``\textsf{Samsung}'' in the \texttt{product} column and ``\textsf{Seoul}'' is a city of ``\textsf{South Korea}'' in the \texttt{area} column).
+
+%\noindent which selects the prices of phones from two tables by performing the two IS-A joins against ``\textsf{product}'' and %``\textsf{area}'' columns (e.g. ``\textsf{Galaxy S6}'' is a model of ``\textsf{Samsung}'' in the \texttt{product} column and %``\textsf{Seoul}'' is a city of ``\textsf{South Korea}'' in the \texttt{area} column).
 
 
 The IS-A relation requires the two terms to have the ancestor-descendant relationship in the taxonomy tree. But it cannot recognize the different kinds of relatedness of terms in the taxonomy. For example, recall Figure \ref{fig:taxonomyexample}. The similarity between ``\textsf{California}'' and ``\textsf{Michigan}'' is greater than that between ``\textsf{California}'' and ``\textsf{Seoul}'', because  both ``\textsf{California}'' and ``\textsf{Michigan}'' are two states in the U.S. Therefore, we propose a new function called \textbf{Taxonomy-Similarity} (TS) to precisely quantify the similarity of strings based on a taxonomy tree. Generally speaking,  the greater the similarity between two terms, the closer they are in the taxonomy tree.  Furthermore, note that the TS function needs one string record to  match only one term in the taxonomy. However, one string can often match multiple terms (e.g. ``\textsf{California U.S.} '' matches two terms in the taxonomy). Therefore, we further propose an extended TS function (called ETS) to  consider the substring matching against the taxonomy.

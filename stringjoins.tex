@@ -6,37 +6,27 @@ In this section, we propose a new similarity to quantify the different kinds of 
 \subsection{Similarity with taxonomy trees}
 
 
-The key to an efficient, uniform mechanism for set-at-a-time
-(join-based) matching of query graph patterns is a positional
-representation of occurrences of  elements and in the taxonomy database (see, e.g., [6, 7, 27]),
-which extends the classic inverted index data structure in information retrieval [22]. We borrow the labeling scheme from XML databases and use the prefix based labels. Structural relationships between tree nodes whose positions
+ We borrow the labeling scheme from XML databases and use the prefix based labels. Structural relationships between tree nodes whose positions
 are recorded in this fashion can be determined easily for IS-A relationships.
 
 \smallskip
 \smallskip
 
 \begin{definition}[Taxonomy Similarity]
-Given two taxonomy tree nodes $n_1$ and $n_2$ with their prefix labels $L(n_1)$ and $L(n_2)$,  the similarity TS($n_1$,$n_2$) is the longest common prefix of  $n_1$ and $n_2$ over the length of the shorter path between $n_1$ and $n_2$, that is,  TS($n_1$,$n_2$,$\mathcal{T}$) = $\frac{|LCP(L(n_1),L(n_2))|}{min(|L(n_1)|,|L(n_2)|)}$. \end{definition}
+Given two taxonomy tree nodes $n_1$ and $n_2$ with their prefix labels $L(n_1)$ and $L(n_2)$,  the similarity TS($n_1$,$n_2$) is the longest common prefix of  $n_1$ and $n_2$ over the length of the shorter path between $n_1$ and $n_2$, that is,  TS($n_1$,$n_2$,$\mathcal{T}$) = $\frac{|LCP(n_1,n_2)|}{|n_1|+|n_2|- |LCP(n_1,n_2)|}$. \end{definition}
 
 \smallskip
 \smallskip
 
 
 \begin{example}
-Consider Figure \ref{fig:taxonomyexample}, the similarity between ``\textsf{Seoul}'' (3.1.1.1) and ``\textsf{Suwon}'' (3.1.1.2) is $\frac{3}{4}$= 0.75 (as both countries are in South Korea.), and the the similarity between ``\textsf{Seoul}''  (3.1.1.1) and ``\textsf{Shenzhen}'' (3.2.1.1) is only $\frac{1}{4}$= 0.25 (as two countries are in Asia).
+Consider Figure \ref{fig:taxonomyexample}, the similarity between ``\textsf{Seoul}'' (3.1.1.1) and ``\textsf{Suwon}'' (3.1.1.2) is $\frac{3}{5}$= 0.6 (as both countries are in South Korea.), and the the similarity between ``\textsf{Seoul}''  (3.1.1.1) and ``\textsf{Shenzhen}'' (3.2.1.1) is only $\frac{1}{7}$= 0.14 (as two countries are in Asia).
 \end{example}
 
-\smallskip
-\smallskip
-
-\begin{lem} Given two nodes $n_1$ and $n_2$ in a taxonomy tree, if there are the ancestor-descendant relation between $n_1$ and $n_2$, then $TS(n_1,n_2)$ = 1.
-\end{lem}
-
-\begin{proof} Since $n_1$ and $n_2$ have the ancestor-descendant relation, without loss the generality, assume that $n_1$ is the ancestor of $n_2$, then $|LCP(n_1,n_2)|$ = $|n_1|$ and min($|n_1|,|n_2|$) = $|n_1|$. Therefore, TS($n_1,n_2$) = 1.
-\end{proof}
+The complexity to computer TS is $O(|n_1|+|n_2|)$. This is efficient.
 
 
-\subsection{Join algorithms}
+\subsection{ Nested-loop Join algorithms}
 
 
 We would formulate the string similarity join problem and develop the corresponding algorithms. Given two collections of strings $S$ and $T$, a taxonomy tree
@@ -49,7 +39,20 @@ such that $TS(s,t,\mathcal{T})$ $>$ $\theta$, where \textit{TS} is
 
 Given two collections of strings $S$ and $T$, the baseline join algorithm is the nested-loop join. All string pairs are accessed to determine the IS-A relationships. But this algorithm is obviously not efficient. Therefore, we propose an efficient algorithm.
 
+The complexity to computer the join set is $O(|S| \cdot |T| \cdot L^2)$, where L is the longest string in the set. This is not efficient.
 
+
+\subsection{Indexed based join algorithms}
+
+The first join method is based on the sort of data.
+
+Associated with a collection $T$ there is a list $L_T$. This list contain the positional representation of the taxonomy tree nodes that match strings in the $T$. The nodes in the list are sorted by the lexicographical order. The operation over lists are: Eof, advance, next.
+We main two cursors in each list: C1 and C2.
+
+\begin{lem} Given a string $s$ with the length $|s|$, if any string t, $TS(s,t) > \theta$, then $s$ and $t$ share the prefix with the length of at least $|s| \cdot \theta $.
+\end{lem}
+
+The second join method is based on the taxonomy tree in the main memory.
 
 \begin{figure}[t]
 \centering
@@ -59,29 +62,35 @@ Given two collections of strings $S$ and $T$, the baseline join algorithm is the
 \end{figure}
 
 
-%\begin{algorithm}
-%{\bf Input}: two strings $s_1$ and $s_2$ \\
-%{\bf Output}: four relationships: R=\{Hype, Hypo, Equa and Non\}
-%\begin{compactenum}[(1)]
-%\item {\bf If} ($s_1 = s_2$ )  {\bf return} Equa;
-%\item {\bf If} ($|LCD(s_1)| >$ 1 AND $|LCD(s_2)| >$ 1 )  {\bf return} None;
-%\item {\bf Else} {\bf if} ($|LCD(s_1)| =$ 1 AND $|LCD(s_2)| >$ 1 )
-%\item \verb"  " {\bf If}  $\forall t \in LCD(s_1)$, $t$ is a hypernym of $LCD(s_2)$
-%\item \verb"    " {\bf return} Hype {\bf else} {\bf return} None;
-%\item {\bf Else} {\bf if} ($|LCD(s_2)| =$ 1 AND $|LCD(s_1)| >$ 1 )
-%\item \verb"  " {\bf If}  $\forall t \in LCD(s_2)$, $t$ is a hypernym of $LCD(s_1)$
-%\item  \verb"    " {\bf return} Hypo {\bf else} {\bf return} None;
-%\item {\bf Else} /\ *  $|LCD(s_1)| = |LCD(s_2)| = $ 1 */\
-%\item  \verb"  " {\bf If}  $LCD(s_1)$ is a hypernym of $LCD(s_2)$  {\bf return} Hype
-%\item   \verb"  " {\bf Else if}  $LCD(s_1)$ is a hyponym of $LCD(s_2)$  {\bf return} Hypo
-%\item   \verb"  " {\bf Else return} none
-%\end{compactenum}
-%\caption{Determine the relationship between two strings}
-%\label{alg:measure}
-%\end{algorithm}
+
+\begin{algorithm}
+{\bf Input}: two sorted lists of labels \\
+{\bf Output}: string pairs $(s_1,s_2) \in L_1 \times L_2$, s.t. $TS(s_1, s_2) > \theta$
+\begin{compactenum}[(1)]
+\item Initialize  $C_1$, $C_2$ to point to the first elements in $L_1$ and $L_2$
+\item {\bf WHILE}  $\neg$end($L_1$, $C_1$) and $\neg$end($L_2$,$C_1$) {\bf DO}
+\item ~~ $L_{min}$ = the list with the smaller element and $L_{max}$ the larger
+\item ~~ $p$ = prefix(cur($L_{min}$,$C_1$),$  \lceil l \cdot \theta \rceil$)
+\item ~~ {\bf WHILE} (cur($L_{max}$,$C_2$) has the prefix $p$) {\bf DO}
+\item ~~ ~~ ~~ {\bf IF} TS(cur($L_{max}$,$C_2$), cur($L_{min}$,$C_1$))$> \theta$ {\bf THEN}
+\item ~~~   ~~ ~~ ~~ Add this pair to $R$
+\item ~~ ~~ ~~  advance($L_{max}$,$C_2$)
+\item $L_{max}.C_2$ =$L_{max}.C_1$
+\item advance($L_{min}$,$C_1$)
+\end{compactenum}
+\caption{TS Join based on sorted labels}
+\label{alg:exactjoin}
+\end{algorithm}
+
+The worst case complexity is $O(N^2)$, because the algorithm may compute each pair of strings with the prefix $p$. But this algorithm will skip many pairs of string for comparison. A theoretical analysis based on a random string model show that the average complexity is $O(\frac{N^2}{S^{\lfloor (1-\theta) \cdot l \rfloor}})$, where $N$ is the total number of elements in each list and $S$ is the maximal width of the taxonomy.
 
 
-
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.35\textwidth]{figures/prefixTrees}
+ \caption{An example of TS join based on prefix trees}
+\label{fig:taxonomyexample}
+\end{figure}
 
 
 \begin{algorithm}
@@ -89,11 +98,14 @@ Given two collections of strings $S$ and $T$, the baseline join algorithm is the
 {\bf Output}: string pairs $(s_1,s_2) \in S_1 \times S_2$, s.t. $TS(s_1, s_2) > \theta$
 \begin{compactenum}[(1)]
 \item Let $T_s$ and $T_t$ denote two prefix trees for $S$ and $T$ respectively.
-\item {\bf FOR} EACH leaf node $n$ in $T_s$ DO
-\item ~~~ $R_1$ = findTS(n,$\mathcal{T}$,$\theta$);
-\item {\bf FOR} EACH join pair ($t_1,t_2$)$\in R_1$
-\item  Add $t_1.List \times t_2.List$ to R;
-\item RETURN $R$
+\item {\bf WHILE} $\neg end(T_s) \vee \neg end(T_t)$ {\bf DO}
+\item ~~ Let $T_{min}$ denotes the list with the smaller elements and $T_{max}$ is the larger 
+\item  ~~ {\bf IF} ($T_{min}$ is a real element) {\bf THEN}
+\item  ~~  ~~  Find($T_{max},T_{min}$)
+\item ~~ {\bf ELSE IF} (isPotentialMatch($T_{min}$,$T_{max}$))  {\bf THEN}
+ \item ~~~~ advance($T_{min}$)
+ \item ~~~~~~~~~~~~~ {\bf ELSE} jump($T_{min}$)
+
 \end{compactenum}
 \caption{String joins with taxonomy}
 \label{alg:exactjoin}
@@ -109,23 +121,26 @@ Given two collections of strings $S$ and $T$, the baseline join algorithm is the
 \item ~~~ $p$ = $prefix(n,l)$
 \item ~~~ IF $i < |n|$ AND $p \notin P$ THEN
 \item ~~~~~~~ Add all nodes in $T_t$ with the length $i$ and the prefix $p$ to R;
-\item ~~~ ELSE   
+\item ~~~ ELSE
 \item ~~~  ~~~  Add all nodes in $T_t$ with the prefix $p$ to R;
 \end{compactenum}
 \caption{findTS(n,T,$\theta$)}
 \label{alg:treejoin}
 \end{algorithm}
 
+\begin{lem} Given two strings $s$ and $t$,  assume that the $LCP(s,t) = x$. $TS(s,t) > \theta$ if and only if  $ x > \theta |s| $ and $  |t| < (\frac{1}{\theta}+1)x-|s|$.
+\end{lem}
+\begin{proof}  $TS(s,t) > \theta$ $\Leftrightarrow$ $\frac{x}{|s|+|t|-x} > \theta \Leftrightarrow |t| < (\frac{1}{\theta}+1)x-|s|$. In addition, note that $|t| \geq x$. Then $x < (\frac{1}{\theta}+1)x-|s|$ $\Rightarrow$ $x > \theta |s| $, which concludes the proof.
+\end{proof}
 
-Associated with a collection $T$ there is a list $L_T$. This list contain the positional representation of the taxonomy tree nodes that match strings in the $T$. The nodes in the list are sorted by the lexicographical order. The operation over lists are: Eof, advance, next.
 
-In the findTS procedure, prefix(n,l) means to return the length-$l$-prefix of node $n$. For example, suppose $n$= 1.5.1.1,  prefix(n,3)=``1.5.1''.  
+In the findTS procedure, prefix(n,l) means to return the length-$l$-prefix of node $n$. For example, suppose $n$= 1.5.1.1,  prefix(n,3)=``1.5.1''.
 
 \smallskip
 \smallskip
 
 \begin{example}
-Consider the node Seoul  (3.1.1.1). Then $|n|$=4, 
+Consider the node Seoul  (3.1.1.1). Then $|n|$=4,
 \end{example}
 
 \smallskip
