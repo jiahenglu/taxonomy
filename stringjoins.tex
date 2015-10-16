@@ -12,15 +12,17 @@ are recorded in this fashion can be determined easily for IS-A relationships.
 \smallskip
 \smallskip
 
+Dewey code is prefix-based labeling scheme that records the position information of each node, according to the path from the root to the node. 
+
 \begin{definition}[Taxonomy Similarity]
-Given two taxonomy tree nodes $n_1$ and $n_2$ with their prefix labels $L(n_1)$ and $L(n_2)$,  the similarity TS($n_1$,$n_2$) is the longest common prefix of  $n_1$ and $n_2$ over the length of the shorter path between $n_1$ and $n_2$, that is,  TS($n_1$,$n_2$,$\mathcal{T}$) = $\frac{|LCP(n_1,n_2)|}{|n_1|+|n_2|- |LCP(n_1,n_2)|}$. \end{definition}
+Given two labels $n_1$ and $n_2$,  the similarity TS($n_1$,$n_2$) is the longest common prefix (LCP) of  $n_1$ and $n_2$ over the length of the longer path between $n_1$ and $n_2$, that is,  TS($n_1$,$n_2$) = $\frac{|LCP(n_1,n_2)|}{max(|n_1|,|n_2|)}$. \end{definition}
 
 \smallskip
 \smallskip
 
 
 \begin{example}
-Consider Figure \ref{fig:taxonomyexample}, the similarity between ``\textsf{Seoul}'' (3.1.1.1) and ``\textsf{Suwon}'' (3.1.1.2) is $\frac{3}{5}$= 0.6 (as both countries are in South Korea.), and the the similarity between ``\textsf{Seoul}''  (3.1.1.1) and ``\textsf{Shenzhen}'' (3.2.1.1) is only $\frac{1}{7}$= 0.14 (as two countries are in Asia).
+Consider Figure \ref{fig:taxonomyexample}, the similarity between ``\textsf{Seoul}'' (3.1.1.1) and ``\textsf{Suwon}'' (3.1.1.2) is $\frac{3}{4}$= 0.75 (as both countries are in South Korea.), and the the similarity between ``\textsf{Seoul}''  (3.1.1.1) and ``\textsf{Shenzhen}'' (3.2.1.1) is only $\frac{1}{4}$= 0.25 (as two countries are in Asia).
 \end{example}
 
 The complexity to computer TS is $O(|n_1|+|n_2|)$. This is efficient.
@@ -49,17 +51,17 @@ The first join method is based on the sort of data.
 Associated with a collection $T$ there is a list $L_T$. This list contain the positional representation of the taxonomy tree nodes that match strings in the $T$. The nodes in the list are sorted by the lexicographical order. The operation over lists are: Eof, advance, next.
 We main two cursors in each list: C1 and C2.
 
-\begin{lem} Given a string $s$ with the length $|s|$, if any string t, $TS(s,t) > \theta$, then $s$ and $t$ share the prefix with the length of at least $|s| \cdot \theta $.
+\begin{lem} Given a string $s$ with the length $|s|$, if any string t, $TS(s,t) > \theta$,  then $s$ and $t$ share the prefix with the length of at least $|s| \cdot \theta $.
 \end{lem}
 
 The second join method is based on the taxonomy tree in the main memory.
 
-\begin{figure}[t]
-\centering
-\includegraphics[scale=0.4]{figures/labeljoins}
- \caption{Join inverted lists}
-\label{fig:invertedlist}
-\end{figure}
+%\begin{figure}[t]
+%\centering
+%\includegraphics[scale=0.4]{figures/labeljoins}
+% \caption{Join inverted lists}
+%\label{fig:invertedlist}
+%\end{figure}
 
 
 
@@ -88,7 +90,7 @@ The worst case complexity is $O(N^2)$, because the algorithm may compute each pa
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.35\textwidth]{figures/prefixTrees}
- \caption{An example of TS join based on prefix trees}
+ \caption{An example of TS join based on prefix trees (a circle means an internal element, but a rectangle means a real element)}
 \label{fig:taxonomyexample}
 \end{figure}
 
@@ -103,7 +105,7 @@ The worst case complexity is $O(N^2)$, because the algorithm may compute each pa
 \item  ~~ {\bf IF} (possibleMatch(cur($T_{min}$),cur($T_{max}$))) {\bf THEN}
 \item ~~ ~~ {\bf  IF} ($T_{min}$ is a real element)   {\bf THEN} Find(cur($T_{min})$,cur($T_{max}$))
  \item ~~~~ advance($T_{min}$)
- \item ~~ {\bf ELSE} jump($T_{min}$)
+ \item ~~ {\bf ELSE} Jump($T_{min}$)
 \end{compactenum}
 \smallskip
 \textbf{Function} possibleMatch($s_1$,$s_2$)
@@ -114,11 +116,16 @@ The worst case complexity is $O(N^2)$, because the algorithm may compute each pa
 \item   {\bf ELSE} FALSE
 \end{compactenum}
 \smallskip
+\textbf{Procedure} Jump($T$)
+\begin{compactenum}[(1)]
+\item  read the next element that is not a descendant with the depth-first traversal
+\end{compactenum}
+\smallskip
 \textbf{Procedure} Find($s_1$,$s_2$)
 \begin{compactenum}[(1)]
 \item  $x = LCP(s_1,s_2) $
-\item {\bf IF} ( $|s_2| < (\frac{1}{\theta}+1)x-|s_1|$ ) {\bf THEN}
-\item ~~~~ {\bf FOR EACH} $i$=$|s_2|$ to $ \lceil (\frac{1}{\theta}+1)x-|s_1| \rceil -1 $ {\bf DO}
+\item {\bf IF} ( $|s_2| < max(\frac{x}{\theta},|s|)$) {\bf THEN}
+\item ~~~~ {\bf FOR EACH} $i$=$|s_2|$ to $ \lceil max(\frac{x}{\theta},|s|) \rceil -1 $ {\bf DO}
 \item ~~~~~~~ Add all real nodes under $s_2$ with the length $i$ to R;
 \end{compactenum}
 \caption{String joins with taxonomy}
@@ -126,7 +133,7 @@ The worst case complexity is $O(N^2)$, because the algorithm may compute each pa
 \end{algorithm}
 
 
-\begin{lem} Given two strings $s$ and $t$,  assume that the $LCP(s,t) = x$. $TS(s,t) > \theta$ if and only if  $ x > \theta |s| $ and $  |t| < (\frac{1}{\theta}+1)|x|-|s|$.
+\begin{lem} Given two labels $s$ and $t$,  assume that $LCP(s,t) = x$. without the loss of generality, assume that $s<t$ by the lexicographical order, $TS(s,t) > \theta$ if and only if  $ x > \theta |s| $ and $  |t| < max(\frac{x}{\theta},|s|)$.
 \end{lem}
 \begin{proof}  $TS(s,t) > \theta$ $\Leftrightarrow$ $\frac{x}{|s|+|t|-x} > \theta \Leftrightarrow |t| < (\frac{1}{\theta}+1)x-|s|$. In addition, note that $|t| \geq x$. Then $x < (\frac{1}{\theta}+1)x-|s|$ $\Rightarrow$ $x > \theta |s| $, which concludes the proof.
 \end{proof}

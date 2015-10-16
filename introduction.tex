@@ -8,6 +8,31 @@
 \end{figure}
 
 
+
+
+A string join, which finds all string pairs between two input collections, is an essential operation in many applications, such as  data integration \cite{conf/sigmod/Sarawagi04}, data cleansing \cite{conf/vldb/ArasuGK06,journals/www/LiJM06} and record linkage \cite{books/Winkler99}. In practice, the same object/entity may have different representation  due to a variety of reasons such as misspellings
+caused by typographic errors and different formatting conventions including synonyms, abbreviations and acronyms. Hence, a string similarity join is an important operation for reconciling different
+representations of an entity. A large number of different similarity functions such as Levenshtein distance~\cite{conf/sigmod/WangLF12},
+Hamming distance~\cite{conf/spire/Kondrak05}, Episode
+distance~\cite{conf/ijcai/CohenRF03}, Cosine
+metric~\cite{journals/ipm/SaltonB88}, Jaccard
+Coefficient~\cite{conf/icde/ChaudhuriGK06,conf/icde/LiLL08}, JaccT \cite{conf/icde/ArasuCK08} and Synonym-based similarity \cite{conf/sigmod/LuLWLW13} have been proposed in the literature. It is well known
+that no single similarity function is universally applicable
+across all domains and scenarios.
+
+In this paper, we investigate a novel problem to exploit taxonomy with string similarity joins. In principle, the taxonomy presents a general purpose strategy to improve the accuracy of string joins by enriching data with semantics-based knowledge. Taxonomies are sets of IS-A hierarchies, which identify the relations between different concepts. The IS-A relationship
+is a transitive closure of the concept-instance relationship.
+For example, if ``\textsf{kitten}'' is an instance of ``\textsf{cat}'', and
+``\textsf{cat}'' is an instance of ``\textsf{pet}'', then ``\textsf{kitten}'' is an instance
+of ``\textsf{pet}''. If we treat each term as a node, and create
+for each (concept, instance) pair, an edge from the concept
+to the instance, then we can think of the taxonomy as a tree or forest. For any node that representing a term,
+the IS-A relation could be any descendant of it in the tree. Figure
+1 gives an example of a toy geographical taxonomy tree.  
+
+Based on the taxonomy,  the similarity of two strings can be measured in a \textit{semantic} way. For example, consider two pairs (Los Angles, Cupertino) and (Los Angles, Seoul). Intuitively, the similarity between Los Angles and Cupertino should be greater than that between Los Angles and Seoul, because the formers are two cities in the same country and the same sate.To quantify the similarity is to utilize the taxonomy. one simple method is to calculate the Longest common prefixes (LCP) between two strings. Thus, LCP(Los Angles, Cupertino)= 4, but (Los Angles, Seoul)=1. Clearly the similarity between Los Angles and Cupertino is greater than that between Los Angles and Seoul.
+
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.45\textwidth]{figures/productexample}
@@ -15,31 +40,13 @@
 \label{fig:twotables}
 \end{figure}
 
-
-A string join, which finds all string pairs between two input collections, is an essential operation in many applications, such as  data integration \cite{conf/sigmod/Sarawagi04}, data cleansing \cite{conf/vldb/ArasuGK06,journals/www/LiJM06} and record linkage \cite{books/Winkler99}. In practice, the same object/entity may have different representation  due to a variety of reasons such as misspellings
-caused by typographic errors, different formatting conventions
-used by data sources, such as synonym, abbreviation and acronym. Hence, a string similarity join is an important operation for reconciling different
-representations of an entity. A large number of different similarity functions such as Levenshtein distance~\cite{conf/sigmod/WangLF12},
-Hamming distance~\cite{conf/spire/Kondrak05}, Episode
-distance~\cite{conf/ijcai/CohenRF03}, Cosine
-metric~\cite{journals/ipm/SaltonB88}, Jaccard
-Coefficient~\cite{conf/icde/ChaudhuriGK06,conf/icde/LiLL08}, JaccT \cite{conf/icde/ArasuCK08} and SE \cite{conf/sigmod/LuLWLW13} have been proposed in the literature. It is well known
-that no single similarity function is universally applicable
-across all domains and scenarios.
-
-In this paper, we investigate a novel problem to exploit taxonomy with string similarity joins. In principle, the taxonomy presents a general purpose strategy to improve the accuracy of string joins by enriching data with semantics-based knowledge. For example, Figure \ref{fig:taxonomyexample} shows an example of geographical taxonomy.
-
-Based on the taxonomy, we can measure the similarity of string in a semantic way. For example, consider two pairs of strings California Seoul, and California Michigan. Intuitively, the similarity of s1 and s2 is greater than s1 and s3, because Los Angles and San Francisco are two cities in the same state (i.e. California) and the same country (i.e. U.S.). One method is to add the path from the root to the words and use the Jaccard coefficient to measure.
-
-
-
 We give several applications to shed light on the importance of the  string similarity matching with taxonomy.
 
 \begin{itemize}
-  \item Data Integration For example, consider Figure \ref{fig:twotables}.
-  \item Data mining More applications can be found in areas such as term classification and term clustering.
-  \item Data cleaning data cleaning needs to find from a collection of entities those similar to a given entity. A typical query is ``Find records related to the product of Sumsung cellphone'', and an entity of ``Glaxy S6'' should be found and returned.
-  \item Information extraction Find all geological entity in U.S. Then a new similarity measure based on a geological taxonomy can handle term variation and discover more location of interests
+  \item \textbf{Data Integration} Taxonomy is useful for data integration. For example, consider Figure \ref{fig:twotables}. In order to perform the join in two columns Product and Area. The taxonomy includes Apple 6s is a model of iphone and Cupertino is a city in US.
+  \item \textbf{Data mining} More applications can be found in areas such as term classification and term clustering.
+  \item \textbf{Data cleaning} data cleaning needs to find from a collection of entities those similar to a given entity. A typical query is ``Find records related to the product of Sumsung cellphone'', and an entity of ``Glaxy S6'' should be found and returned.
+  \item \textbf{Information extraction} Find all geological entity in U.S. Then a new similarity measure based on a geological taxonomy can handle term variation and discover more location of interests
 \end{itemize}
 
 
@@ -57,15 +64,7 @@ We give several applications to shed light on the importance of the  string simi
 In this paper, we assume that we already have complete
 information of these IS-A relations, i.e. \textit{taxonomy}, and we will focus on how
 to efficiently perform a string join by utilizing the taxonomy, and how to optimize the index structure
-for this purpose.  Taxonomies are sets of IS-A hierarchies, which identify the relations between different concepts. The IS-A relationship
-is a transitive closure of the concept-instance relationship.
-For example, if ``\textsf{kitten}'' is an instance of ``\textsf{cat}'', and
-``\textsf{cat}'' is an instance of ``\textsf{pet}'', then ``\textsf{kitten}'' is an instance
-of ``\textsf{pet}''. If we treat each term as a node, and create
-for each (concept, instance) pair, an edge from the concept
-to the instance, then we can think of the taxonomy as a tree or forest. For any node that representing a term,
-the IS-A relation could be any descendant of it in the tree. Figure
-1 gives an example of a toy geographical taxonomy tree.
+for this purpose.
 
 %For example, the (Guangdong, Shenzhen) is a (concept, instance) pair and (Shenzhen, China) has the IS-A relation, as Shenzhen is a city in China.
 
@@ -96,34 +95,21 @@ Our technical contribution here is to propose a new filtering strategy based on 
 filter has larger pruning power and less filtering cost
 than state-of-the-art filters in a theoretical analysis based on Jaccard similarity.
 
-%\begin{problem}(String measure with taxonomy). Given two strings $s_1$ and $s_2$ and a taxonomy $T$, how to measure the similarity between $s_1$ and $s_2$ based on T?
-%\end{problem}
-%\begin{problem}(String joins with taxonomy). Given a string $p$$\in$
-%$\Sigma^*$, an integer k, and a synonym set $\mathbb{R}$,  .
-%\end{problem}
-
-
-
-
-\subsection{Novelty and contributions}
-
-
-\smallskip
-
-
-Our contributions are as follows.
-
-\noindent \textbf{Introduction of taxonomy for string joins}. We introduce a new problem to utilize the taxonomy for the string joins in databases, which has application in data integration and data cleansing. We propose a novel
-
-\noindent \textbf{Optimal algorithms for TS} We develop an inverted list introduce an algorithm for multiple string joins.
-
-\noindent \textbf{Novel filters for ETS function} We extend TS to handle more general cases of strings with taxonomy and propose a composite n-ary signatures.
-
-\noindent \textbf{Generality and variations}  We introduce a novel algorithm for incrementally updating taxonomy. Our merging algorithm allows us to incorporate new correlations introduced over a subset of tuples into
-the correlations already present in the database, without recomputing the existing results.
-
 
 Finally, we perform experiments to evaluate our results and show the benefits of proposal algorithms.
+
+%\subsection{Novelty and contributions}
+%
+%Our contributions are as follows.
+%\noindent \textbf{Introduction of taxonomy for string joins}. We introduce a new problem to utilize the taxonomy for the string joins in databases, which has application in data integration and data cleansing. We propose a novel
+%
+%\noindent \textbf{Optimal algorithms for TS} We develop an inverted list introduce an algorithm for multiple string joins.
+%
+%\noindent \textbf{Novel filters for ETS function} We extend TS to handle more general cases of strings with taxonomy and propose a composite n-ary signatures.
+%
+%\noindent \textbf{Generality and variations}  We introduce a novel algorithm for incrementally updating taxonomy. Our merging algorithm allows us to incorporate new correlations introduced over a subset of tuples into
+%the correlations already present in the database, without recomputing the existing results.
+
 
 
 \smallskip

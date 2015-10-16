@@ -7,24 +7,24 @@ From the TS funciton in the previous section, we saw the utilization of taxonomy
 
 \subsection{ETS functions}
 
-We define a new similarity function, which has the following four properties:
+We define a new similarity function, which has the following three properties, called the three C's features:
 
-(1)\textbf{ Beneficial}, that means the new similarity is always greater than the one without considering the taxonomy. That is, using taxonomy will not hurt the similarity in all cases; $f(S,T,\mathcal{T} ) \geq  f(S,T) $
+(1)\textbf{Constructive },  the new similarity is always greater than the one without considering the taxonomy. That is, using taxonomy is always constructive to the similarity; $f(S,T,\mathcal{T} ) \geq  f(S,T) $
 
-(2) \textbf{Upward compatible}. That means when the taxonomy is updated with the insertion of the elements, the similarity always increases. That is, richer semantics will not hurt the similarity in all cases; $f(S,T,\mathcal{T} ) \leq  f(S,T, \mathcal{T'}) $ if $\mathcal{T}$ contains more elements than $\mathcal{T'}$.
+(2) \textbf{Compatible}. When the taxonomy is updated with the insertion of the elements, the similarity always increases. That is, the similarity is upward compatible; $f(S,T,\mathcal{T} ) \leq  f(S,T, \mathcal{T'}) $ if $\mathcal{T}$ contains more elements than $\mathcal{T'}$.
 
-(4) \textbf{Consistent with JS}, if there is only one element in S and T, then the new similarity function should be the same as the previous JS function $f(S,T,\mathcal{T} ) =  JS(S,T,\mathcal{T}) $ if $|S|=|T|$=1.
+(4) \textbf{Consistent}, Given two sets of tokens: S=\{$s_1,s_2,...s_n$\} and T=\{$t_1,t_2,...,t_m$\}, the maxim TS similarity between $s_i$ and $t_j$ is max, and the minimum is min. Then $ min \leq f(S,T,\mathcal{T} ) \leq max $. That means, the final similarity is consistent with the similarity of two single elements.
 
-The overall similarity is computed by
+
+We propose a new  similarity which is computed by
 
 \begin{equation}
-\frac{Intersection}{|s_1|+|s_2| - Intersection}
+\frac{Maximum ~ similarity ~ matching}{max(|S_1|,|S_2|)}
 \end{equation}
 
- where $|s_1|+|s_2|$  meas the the total number of elements in two sets.
 
 
-The intersection size is computed by the maximum weight matching in bipartite graphs. The weight is calculated by the binary similarity of any two elements. The intersection size may be a real number, not always an integer now.
+The maximum  similarity  matching is computed by the maximum weight matching in bipartite graphs. The weight is calculated by the binary similarity of any two elements.
 
 The algorithm of the maximum weight matching in bipartite graphs is called the Hungarian method. The time analysis of the algorithm is $O(n^3)$.
 
@@ -33,19 +33,6 @@ Therefore, the  time analysis for the overall cost to compute two strings is $O(
 
 
 
-\begin{algorithm}
-{\bf Input}: two strings $s_1$ and $s_2$, a taxonomy $\mathcal{T}$ \\
-{\bf Output}: $TJ(s_1,s_2,\mathcal{T})$
-\begin{compactenum}[(1)]
-\item Let $S_T $ to contain all tokens for taxonomy-based intersection. Initially, $S_T = \emptyset$.
-\item Let $L_1$ (resp. $L_2$) denote the applicable taxonomy node list for $s_1$ (resp. $s_2$);
-\item Scan $L_1$ and $L_2$ sequentially to find any matching pair $n_1 \in L_1$, $n_2 \in L_2$, s.t. ($n_1$,$n_2$) has the IS-A relation in $\mathcal{T}$;
-\item Add all tokens $t \in n_1 \cup n_2$ to the set $S_T$;
-\item  return $\frac{S_T \cup (|s_1 \cap s_2|)}{|s_1 \cup s_2|}$;
-\end{compactenum}
-\caption{String joins with taxonomy}
-\label{alg:exactjoin}
-\end{algorithm}
 
 
 \subsection{String similarity join algorithms}
@@ -58,8 +45,23 @@ Therefore, the  time analysis for the overall cost to compute two strings is $O(
 %\label{fig:similaritygeaph}
 %\end{figure}
 
+Note that the computation of similarity between two sets are really expensive by the Hungarian algorithm. Therefore, we develope different filters to reduce the the times of final verification.
+ 
+\textbf{Length filter}. Given two sets of tokens $S$ and $T$ and a threshold $\theta$, without loss of the generality, assume that $|S| < |T|$,  if $ETS(S,T) > \theta$. then $|S|> \theta |T|$,
 
-\textbf{Signature-based index}. Given a string s with length $|s|$, then the size of signature is $\lceil (1-\theta)|s| \rceil$. But if the signatures involve the taxonomy, then we cannot make this argument.
+\textbf{Component filter}. Given two sets of tokens $S$=\{$s_1,s_2,...,s_n$\} and $T$=\{$t_1,t_2,...,t_m$\} and a threshold $\theta$, if $ETS(S,T) > \theta$. then $\exists s_i \in S$ and $t_j \in T$, s.t. $ TS(s_i, t_j)> \theta $,
+
+\begin{lem} Given two sets $S$ and $T$, without the loss of generality, assume that $|S|<|T|$. If $ETS(S,T) > \theta$,  then there are $|S|$ pairs of elements ($s_i, t_j$) in  $S$ and $T$ such that  $TS(s_i, t_j) > \theta |T| +1 -|S|$.
+\end{lem}
+
+\smallskip
+
+\begin{lem} Given two sets $S$ and $T$. If $ETS(S,T) > \theta$, without the loss of generality, assume that $|S|<|T|$. If $ETS(S,T) > \theta$,  then there are at least $p$ pairs of elements ($s_i, t_j$) in  $S$ and $T$ such that each $TS(s_i, t_j) > \frac{\theta |T| - p +1}{|S|-p+1} $.
+\end{lem}
+
+\smallskip
+
+\textbf{Signature filter}. Given a string s with length $|s|$, then the size of signature is $\lceil (1-\theta)|s| \rceil$. But if the signatures involve the taxonomy, then we cannot make this argument.
 
 But if in some real cases, we select the word from taxonomy as signatures. Therefore we need to compute a relax maximum similarity. In this case, we still do not need to retrieve the whole string to compute real similarity.
 
@@ -99,7 +101,7 @@ It is very important to note that we use the greedy algorithm to compute the max
 
 After that, we select the maximal number which is greater than $\theta \cdot |s|$ as the signature set.
 
-\subsubsection{N-ary prefix scheme}
+\subsubsection{Composite signature scheme}
 
 
 
