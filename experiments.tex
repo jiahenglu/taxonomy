@@ -236,19 +236,6 @@ Figure~\ref{fig:scalability} and Figure \ref{fig:scalability_LSH} show the runni
 to outperform other methods when one string involves more than 10 rules.
 
 
-\subsection{Other similarity measures}
-
-The fourth set of experiments focuses on the extensions about other similarity measures, which are discussed in Section 7.
-
- Experiments were conducted to empirically compare the performance of four similarity measures, i.e.,\textit{ Overlap}, \textit{Dice} and \textit{Cosine} (as mentioned in Section \ref{subsec:othersimilarity}) and \textit{Jaccard}. We compared four algorithms: QP(S)-O, QP(S)-D, QP(S)-C and QP(S)-J based on QP-search, where QP(S)-O uses \textit{Overlap} measure, QP(S)-D applies \textit{Dice} measure, QP(S)-C utilizes \textit{Cosine} measure while QP(S)-J employs \textit{Jaccard} measure. In Figure \ref{fig:different_measures}, we presented the running time of these four algorithms in three different data sets with threshold $\theta=0.9$ (for \textit{Dice}, \textit{Cosine} and \textit{Jaccard}) and $\theta=5$ (for \textit{Overlap}). As shown, QP(S)-J performs the best, since the average number of signatures of QP(S)-J is the smallest. In contrast, QP(S)-O, having a large size of signatures,  takes the longest to output its answers.
-
- An interesting finding is that, the precision of \textit{Full} increases when the number of noisy synonyms grows from 20 to 80, but drops to zero suddenly when the number reaches 100. It can be explained that with more noisy synonyms, less string pairs returned  from \textit{Full} have higher similarity than $0.8$. When the number of noisy synonyms goes up to 100, none of the string pairs have similarity higher than 0.8. Therefore, at this point, the precision of \textit{Full} is zero.
-
-
-\subsection{Update of taxonomy trees}
-
-The final set of experiments focuses on the update of taxonomy tress, showing that our algorithms can avoid the complete recomputation to find new results with the update of taxonomy trees.
-
 \smallskip
 
 \noindent \textbf{Summary} ~~ Finally, we summarize the main findings.

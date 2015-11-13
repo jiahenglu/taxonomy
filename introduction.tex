@@ -4,15 +4,13 @@
 \centering
 \includegraphics[width=0.45\textwidth]{figures/taxonomylabels}
  \caption{An example of geographical taxonomy with labels}
-\label{fig:taxonomyexample}
+\label{fig:toytaxonomyexample}
 \end{figure}
 
 
-
-
-A string join, which finds all string pairs between two input collections, is an essential operation in many applications, such as  data integration \cite{conf/sigmod/Sarawagi04}, data cleansing \cite{conf/vldb/ArasuGK06,journals/www/LiJM06} and record linkage \cite{books/Winkler99}. In practice, the same object/entity may have different representation  due to a variety of reasons such as misspellings
-caused by typographic errors and different formatting conventions including synonyms, abbreviations and acronyms. Hence, a string similarity join is an important operation for reconciling different
-representations of an entity. A large number of different similarity functions such as Levenshtein distance~\cite{conf/sigmod/WangLF12},
+A string join, which finds all equivalent string pairs between two input collections, is an essential operation in many applications, such as  data integration \cite{conf/sigmod/Sarawagi04}, data cleansing \cite{conf/vldb/ArasuGK06,journals/www/LiJM06} and record linkage \cite{books/Winkler99}. In practice, the same object/entity may have different representations  due to a variety of reasons such as misspellings
+caused by typographic errors and different formatting conventions including synonyms, abbreviations and acronyms. Hence, it is important to support approximate string joins for reconciling different
+representations of an entity. A large number of  similarity functions such as Levenshtein distance~\cite{conf/sigmod/WangLF12},
 Hamming distance~\cite{conf/spire/Kondrak05}, Episode
 distance~\cite{conf/ijcai/CohenRF03}, Cosine
 metric~\cite{journals/ipm/SaltonB88}, Jaccard
@@ -28,9 +26,9 @@ of ``\textsf{pet}''. If we treat each term as a node, and create
 for each (concept, instance) pair, an edge from the concept
 to the instance, then we can think of the taxonomy as a tree or forest. For any node that representing a term,
 the IS-A relation could be any descendant of it in the tree. Figure
-1 gives an example of a toy geographical taxonomy tree.  
+\ref{fig:toytaxonomyexample} gives a toy example of a geographical taxonomy tree.
 
-Based on the taxonomy,  the similarity of two strings can be measured in a \textit{semantic} way. For example, consider two pairs (Los Angles, Cupertino) and (Los Angles, Seoul). Intuitively, the similarity between Los Angles and Cupertino should be greater than that between Los Angles and Seoul, because the formers are two cities in the same country and the same sate.To quantify the similarity is to utilize the taxonomy. one simple method is to calculate the Longest common prefixes (LCP) between two strings. Thus, LCP(Los Angles, Cupertino)= 4, but (Los Angles, Seoul)=1. Clearly the similarity between Los Angles and Cupertino is greater than that between Los Angles and Seoul.
+Based on the taxonomy,  the similarity of two strings can be measured in a \textit{semantic} way. For example, consider two pairs (\textsf{Los Angles}, \textsf{Cupertino}) and (\textsf{Los Angles}, \textsf{Seoul}). Intuitively, the similarity between \textsf{Los Angles} and \textsf{Cupertino} should be greater than that between \textsf{Los Angles} and \textsf{Seoul}, because the formers are two cities in the same country and the same state. To quantify the similarity, one method is to calculate the longest common prefixes (LCP) between two strings against the taxonomy. Thus, based on Figure \ref{fig:toytaxonomyexample}, LCP(\textsf{Los Angles}, \textsf{Cupertino})= 4, but (\textsf{Los Angles}, \textsf{Seoul})=1. Clearly the similarity between \textsf{Los Angles} and \textsf{Cupertino} is greater than that between \textsf{Los Angles} and \textsf{Seoul}.
 
 
 \begin{figure}[t]
@@ -40,16 +38,16 @@ Based on the taxonomy,  the similarity of two strings can be measured in a \text
 \label{fig:twotables}
 \end{figure}
 
-We give several applications to shed light on the importance of the  string similarity matching with taxonomy.
+We give several applications to shed light on the importance of the  string similarity matching with taxonomy on databases.
 
 \begin{itemize}
-  \item \textbf{Data Integration} Taxonomy is useful for data integration. For example, consider Figure \ref{fig:twotables}. In order to perform the join in two columns Product and Area. The taxonomy includes Apple 6s is a model of iphone and Cupertino is a city in US.
-  \item \textbf{Data mining} More applications can be found in areas such as term classification and term clustering.
-  \item \textbf{Data cleaning} data cleaning needs to find from a collection of entities those similar to a given entity. A typical query is ``Find records related to the product of Sumsung cellphone'', and an entity of ``Glaxy S6'' should be found and returned.
-  \item \textbf{Information extraction} Find all geological entity in U.S. Then a new similarity measure based on a geological taxonomy can handle term variation and discover more location of interests
+  \item \textbf{Data Integration} ~ Data integration involves combining data residing in different sources. Taxonomy is quite useful to  discover the relations of various objects. For example, consider two tables in Figure \ref{fig:twotables}. In order to correctly perform the integration between two tables, the system needs to know hat ``\textsf{Apple 6s is a model of iphone}'' and ``\textsf{Cupertino is a city in US}'', and etc. A join mechanism that can utilize such taxonomy knowledge may help users to discover more relevant records and thus to improve the effectiveness of data integration.
+  \item \textbf{Data mining} ~ Term classification and term clustering are two important tasks in data mining. A new similarity measure that can find the IS-A relations between terms is beneficial to term classification and clustering algorithms to improve their accuracies \cite{journals/dke/CaglieroG13}.
+  \item \textbf{Data cleaning}~  Data cleaning is the process of detecting and correcting (or removing) corrupt or inaccurate records from a table or database. Two records about ``\textsf{Sumsung cellphone}'' and ``\textsf{Glaxy S6}'' may contain the duplicate or inconsistent information, because ``\textsf{Glaxy S6}'' IS-A model of ``\textsf{Sumsung cellphones}''. In those scenarios, the taxonomy enhances the quality of data cleaning by finding more relevant records.
+
 \end{itemize}
 
-
+  %\item \textbf{Information extraction} Find all geological entity in U.S. Then a new similarity measure based on a geological taxonomy can handle term variation and discover more location of interests
 
 
 %  Conceptually, there are two cases of string joins: \textit{exact-joins} and \textit{approximate-joins}. Exact joins mean that two matching strings are exactly the same, while approximate joins tolerate certain difference between two strings and the similarity between two strings is measured by a similarity function, such as  Levenshtein distance~\cite{conf/sigmod/WangLF12},
@@ -69,15 +67,13 @@ for this purpose.
 %For example, the (Guangdong, Shenzhen) is a (concept, instance) pair and (Shenzhen, China) has the IS-A relation, as Shenzhen is a city in China.
 
 
-
+To support the string joins with taxonomy, the first step is to devise new similarity functions which can utilize the taxonomy. Although there is a wealth of research on string similarity functions, most of them focus only on the syntactical-level of words. Some emerging works  \cite{conf/icde/ArasuCK08} can utilize the synonyms to performs the string join, which use semantic information for word comparing. But their works cannot be easily extended to handle taxonomy, because  taxonomy represent a tree-like structure, which is more complicated than the binary relations as specified in synonyms (See Section 2 for more explanations of why the existing similarity functions are not applicable for taxonomy).
 
 
 
 %\noindent which selects the prices of phones from two tables by performing the two IS-A joins against ``\textsf{product}'' and %``\textsf{area}'' columns (e.g. ``\textsf{Galaxy S6}'' is a model of ``\textsf{Samsung}'' in the \texttt{product} column and %``\textsf{Seoul}'' is a city of ``\textsf{South Korea}'' in the \texttt{area} column).
 
-
-The IS-A relation requires the two terms to have the ancestor-descendant relationship in the taxonomy tree. But it cannot recognize the different kinds of relatedness of terms in the taxonomy. For example, recall Figure \ref{fig:taxonomyexample}. The similarity between ``\textsf{California}'' and ``\textsf{Michigan}'' is greater than that between ``\textsf{California}'' and ``\textsf{Seoul}'', because  both ``\textsf{California}'' and ``\textsf{Michigan}'' are two states in the U.S. Therefore, we propose a new function called \textbf{Taxonomy-Similarity} (TS) to precisely quantify the similarity of strings based on a taxonomy tree. Generally speaking,  the greater the similarity between two terms, the closer they are in the taxonomy tree.  Furthermore, note that the TS function needs one string record to  match only one term in the taxonomy. However, one string can often match multiple terms (e.g. ``\textsf{California U.S.} '' matches two terms in the taxonomy). Therefore, we further propose an extended TS function (called ETS) to  consider the substring matching against the taxonomy.
-
+We first define the similarity between two nodes in the taxonomy, then we use the maximum weighted bipartite model to define the similarity of two strings.
 
 Given the newly similarity functions TS and ETS, it is imperative to study efficient similarity join algorithms. The brute-force algorithm that enumerates every string pair and checks whether the two strings in the pair are similar is rather expensive. To alleviate this problem, many algorithms have been proposed in the recent two decades. One widely-adopted technique employs a filter-verification framework, which includes two steps: (1) Filter step: devising effective filtering algorithms to prune large numbers of dissimilar pairs and generating a set of candidate pairs; and (2) Verification step: verifying each candidate pair by computing
 the real similarity and outputting the final results. Filtering algorithms in the first step play an important role

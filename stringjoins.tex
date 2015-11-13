@@ -1,21 +1,16 @@
 \section{Taxonomy similarity}
 
-In this section, we propose a new similarity to quantify the different kinds of relatedness of terms based on a taxonomy tree and propose the corresponding efficient string join algorithms.
+In this section, we propose a function to quantify the similarity between two strings based on a taxonomy tree and then propose several efficient string join algorithms. Here we assume that each string match a single node in the taxonomy tree and we extend it to multiple nodes in the next section.
 
 
-\subsection{Similarity with taxonomy trees}
+\subsection{Similarity functions}
+
+We borrow the labeling scheme from XML databases and use the prefix based labels. Dewey code is prefix-based labeling scheme that records the position information of each node, according to the path from the root to the node. Structural relationships between tree nodes whose positions are recorded in this fashion can be determined easily for IS-A relationships.
 
 
- We borrow the labeling scheme from XML databases and use the prefix based labels. Structural relationships between tree nodes whose positions
-are recorded in this fashion can be determined easily for IS-A relationships.
-
-\smallskip
-\smallskip
-
-Dewey code is prefix-based labeling scheme that records the position information of each node, according to the path from the root to the node. 
 
 \begin{definition}[Taxonomy Similarity]
-Given two labels $n_1$ and $n_2$,  the similarity TS($n_1$,$n_2$) is the longest common prefix (LCP) of  $n_1$ and $n_2$ over the length of the longer path between $n_1$ and $n_2$, that is,  TS($n_1$,$n_2$) = $\frac{|LCP(n_1,n_2)|}{max(|n_1|,|n_2|)}$. \end{definition}
+Given two nodes $n_1$ and $n_2$ on a taxonomy tree $\mathcal{T}$, the taxonomy similarity between $n_1$ and $n_2$, called NS($n_1$,$n_2$), is defined the longest common prefix (LCP) of  $n_1$ and $n_2$ over the length of the longer path between $n_1$ and $n_2$, that is,  NS($n_1$,$n_2$,$T$) = $\frac{|LCP(n_1,n_2)|}{max(|n_1|,|n_2|)}$. \end{definition}
 
 \smallskip
 \smallskip
@@ -28,8 +23,8 @@ Consider Figure \ref{fig:taxonomyexample}, the similarity between ``\textsf{Seou
 The complexity to computer TS is $O(|n_1|+|n_2|)$. This is efficient.
 
 
-\subsection{ Nested-loop Join algorithms}
 
+\subsection{Join algorithms for sorted lists}
 
 We would formulate the string similarity join problem and develop the corresponding algorithms. Given two collections of strings $S$ and $T$, a taxonomy tree
 $\mathcal{T}$, and a similarity threshold $\theta$, a \textit{string
@@ -44,7 +39,6 @@ Given two collections of strings $S$ and $T$, the baseline join algorithm is the
 The complexity to computer the join set is $O(|S| \cdot |T| \cdot L^2)$, where L is the longest string in the set. This is not efficient.
 
 
-\subsection{Indexed based join algorithms}
 
 The first join method is based on the sort of data.
 
@@ -54,7 +48,24 @@ We main two cursors in each list: C1 and C2.
 \begin{lem} Given a string $s$ with the length $|s|$, if any string t, $TS(s,t) > \theta$,  then $s$ and $t$ share the prefix with the length of at least $|s| \cdot \theta $.
 \end{lem}
 
-The second join method is based on the taxonomy tree in the main memory.
+To speedup the query processing, we add two operators: $Len(e)$ is the length of the label $e$, and $LCPL(e)$ is the length of LCP($e,e'$), where $e'$ is the previous label of $e$. 
+
+\begin{theorem} The TS join based on sorted lists perform the join for two table $S$ and $T$ in $\mathcal{O}$$(\Sigma LCP(R)+|S||T|)$. 
+\end{theorem}
+\begin{proof}  
+\end{proof}
+
+\subsection{Join algorithms with compact tries}
+
+The second join method is based on compact tries.
+
+Trie is a rooted tree with the following properties: Edges are labelled with symbols from an alphabet $\Sigma$
+For every node $v$, the edges from $v$ to its children have different labels. Each node represents the string obtained by concatenating the symbols on the path from the root to that node. The space requirement can be problematic, since typically each node needs
+much more space than a single symbol.
+
+
+
+Compact tries reduce the number of nodes by replacing branchless path segments with a single edge.
 
 %\begin{figure}[t]
 %\centering
@@ -66,25 +77,34 @@ The second join method is based on the taxonomy tree in the main memory.
 
 
 \begin{algorithm}
-{\bf Input}: two sorted lists of labels \\
-{\bf Output}: string pairs $(s_1,s_2) \in L_1 \times L_2$, s.t. $TS(s_1, s_2) > \theta$
+{\bf Input}: two sorted lists of labels $L_1$ and $L_2$\\
+{\bf Output}: pairs $(s_1,s_2) \in L_1 \times L_2$, s.t. $TS(s_1, s_2) > \theta$
 \begin{compactenum}[(1)]
-\item Initialize  $C_1$, $C_2$ to point to the first elements in $L_1$ and $L_2$
-\item {\bf WHILE}  $\neg$end($L_1$, $C_1$) and $\neg$end($L_2$,$C_1$) {\bf DO}
-\item ~~ $L_{min}$ = the list with the smaller element and $L_{max}$ the larger
-\item ~~ $p$ = prefix(cur($L_{min}$,$C_1$),$  \lceil l \cdot \theta \rceil$)
-\item ~~ {\bf WHILE} (cur($L_{max}$,$C_2$) has the prefix $p$) {\bf DO}
-\item ~~ ~~ ~~ {\bf IF} TS(cur($L_{max}$,$C_2$), cur($L_{min}$,$C_1$))$> \theta$ {\bf THEN}
+\item {\bf FOR}  i =1 and 2 {\bf DO}
+\item ~~ Initialize two pointers $C_i^1$ and $C_i^2$ to the first element of  $L_i$
+\item {\bf WHILE}  $\neg$end($L_1$) and $\neg$end($L_2$) {\bf DO}
+\item ~~ $min$ = $\arg\min_{i}$($cur(L_i,C_i^1)$); $max$ = $\arg\max_{i}$($cur(L_i,C_i^1)$)
+\item ~~ $p$ = prefix(cur($L_{min}$,$C_1^{min}$),$  \lceil l \cdot \theta \rceil$)
+\item ~~ {\bf WHILE} (cur($L_{max}$,$C_2^{max}$) has the prefix $p$) {\bf DO}
+\item ~~ ~~ ~~ {\bf IF} TS(cur($L_{max}$,$C_2^{max}$), cur($L_{min}$,$C_1^{min}$))$> \theta$ {\bf THEN}
 \item ~~~   ~~ ~~ ~~ Add this pair to $R$
-\item ~~ ~~ ~~  advance($L_{max}$,$C_2$)
-\item $L_{max}.C_2$ =$L_{max}.C_1$
-\item advance($L_{min}$,$C_1$)
+\item ~~ ~~ ~~  advance($L_{max}$,$C_2^{max}$)
+\item ~~ $L_{max}.C_2$ =$L_{max}.C_1^{max}$
+\item ~~ advance($L_{min}$,$C_1$)
+\end{compactenum}
+\smallskip
+\textbf{Function} end($L_i$)
+\begin{compactenum}[(1)]
+\item {\bf IF}  cur($L_i$,$C_i^1$) is the last element of $L_i$ {\bf THEN}
+\item  ~~ RETURN TRUE 
+\item  {\bf ELSE} FALSE
 \end{compactenum}
 \caption{TS Join based on sorted labels}
 \label{alg:exactjoin}
 \end{algorithm}
 
 The worst case complexity is $O(N^2)$, because the algorithm may compute each pair of strings with the prefix $p$. But this algorithm will skip many pairs of string for comparison. A theoretical analysis based on a random string model show that the average complexity is $O(\frac{N^2}{S^{\lfloor (1-\theta) \cdot l \rfloor}})$, where $N$ is the total number of elements in each list and $S$ is the maximal width of the taxonomy.
+
 
 
 \begin{figure}[t]
