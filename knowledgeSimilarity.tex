@@ -112,12 +112,18 @@
 \begin{abstract}
 
 A string similarity join finds all similar pairs between two input string collections. It is an essential operation in
-many applications, such as data integration, data cleansing and record linkage. This paper investigates a novel challenge to integrate taxonomy with string similarity joins. In principle, the taxonomy presents a general-purpose strategy to improve the accuracy of string joins by enriching data with semantics-based knowledge  (i.e., a set of IS-A hierarchies).
+many applications, such as data integration, data cleansing and record linkage. This paper investigates a novel challenge to integrate taxonomy with string similarity joins. In principle, the taxonomy presents a general-purpose strategy to improve the effectiveness of string joins by enriching data with semantics-based knowledge  (i.e., a set of IS-A hierarchies).
 
-In this paper, we first propose several new functions to measure the semantic similarity between two strings based on the taxonomy knowledge. We show three interesting properties our new measurements guarantee. Then given two collections of strings, we describe new algorithms to perform the efficient string similarity joins based on the proposed functions.  The technique relies on the insight that two strings are similar if they share certain number of common ancestors in the taxonomy tree. We optimize our algorithms by  building a cost model and an adaptive strategy to select the best parameters to speedup the performance.  The extensive performance evaluation shows that our algorithms can utilize the taxonomy to improve the effectiveness of string joins  and  scale very well with important parameters like data size and taxonomy size.
+In this paper,  we study how to measure the similarity between two strings with taxonomy and how to perform efficient string join based on those scoring functions. If one string matches only one node in a taxonomy tree, we can employ a similarity function based on the longest common prefixes of strings, and we develop two families of join algorithms with sorted lists and compact tries, which explore different alternatives for the trade-off between space and time complexity. Then for a generalized case, when one string match multiple nodes in a taxonomy tree, we develop a new similarity function based on the maximum weighted matching on bipartite graphs. We show three C's: \textit{Constructive}, \textit{Compatible} and \textit{Consistent}, that our new measurement guarantees. To perform efficient string joins, given a query workload, we formulate an optimization problem to select the best parameters, aiming at maximum filtering power, under the filtering time constraints. We show the NP-hardness of the problem, and propose a probabilistically approximate algorithm to find the solution very efficiently. Finally, the extensive performance evaluations show that our algorithms can utilize the taxonomy to improve the effectiveness of string joins  and  scale very well with important parameters like data size and taxonomy size.
+
+
+% We show three interesting properties, called the three C's: \textit{Constructive}, \textit{Compatible} and \textit{Consistent}, that our new measurement guarantees.  We develop a set of new algorithms to perform the efficient string similarity joins based on different index structures, including sorted lists, compact tries and LS-trees, which explore different alternatives for the trade-off between space and time complexity. Given a query workload, we formulate an optimization problem
+%which chooses the best parameters, aiming at maximum filtering power, under the filtering time constraints. We show the NP-hardness of the problem, and propose a space-efficient approximate algorithm to find the solution very efficiently.
 
 
 \end{abstract}
+
+%The technique relies on the insight that two strings are similar if they share certain number of common ancestors in the taxonomy tree.
 
 %\category{H.2.4}{Database Management}{Systems}[Query processing]
 %\category{H.3.3}{Database Management}{Information Search and
