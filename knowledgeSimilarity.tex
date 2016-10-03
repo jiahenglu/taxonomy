@@ -19,12 +19,12 @@
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{claim}[theorem]{Claim}
+\newtheorem{claim}{Claim}
 \newtheorem{lem}[theorem]{Lemma}
 \newtheorem{terminology}[theorem]{Terminology}
 \newtheorem{corollary}[theorem]{Corollary}
 \newtheorem{observation}[theorem]{Observation}
-\newtheorem{problem}[theorem]{Problem}
+\newtheorem{problem}{Problem}
 
 
 \newtheorem{defi}[theorem]{Definition}
@@ -36,10 +36,6 @@
 \newenvironment{example}{\begin{exa}\upshape\qedwrittenfalse}{\qedhere\end{exa}}
 \newcommand{\qedhere}{\ifqedwritten\else\ifmmode\tag*{\qed}\else\hfill\qed\fi\global\qedwrittentrue\fi}
 
-\newcommand{\topk}{\mbox{top-$k$}}
-\newcommand{\Topk}{\mbox{Top-$k$}}
-\newcommand{\topkm}{\mbox{top-$k$,$m$}}
-\newcommand{\Topkm}{\mbox{Top-$k$,$m$}}
 
 \renewcommand{\leq}{\leqslant}
 \renewcommand{\geq}{\geqslant}
@@ -82,7 +78,7 @@
 %\widowpenalty = 10000
 
 
-\title{Exploiting Taxonomy for String Similarity Joins}
+\title{Efficient String Similarity Joins with Taxonomies}
 
 %\numberofauthors{5}
 
@@ -112,10 +108,48 @@
 \begin{abstract}
 
 A string similarity join finds all similar pairs between two input string collections. It is an essential operation in
-many applications, such as data integration, data cleansing and record linkage. This paper investigates a novel challenge to integrate taxonomy with string similarity joins. In principle, the taxonomy presents a general-purpose strategy to improve the effectiveness of string joins by enriching data with semantics-based knowledge  (i.e., a set of IS-A hierarchies).
+many applications, such as data integration, data cleansing and information extraction. This paper investigates a challenge to integrate taxonomy information with string similarity joins. In principle, taxonomies present a semantic strategy to improve the effectiveness of string joins by enriching data with a set of IS-A hierarchies.
 
-In this paper,  we study how to measure the similarity between two strings with taxonomy and how to perform efficient string join based on those scoring functions. If one string matches only one node in a taxonomy tree, we can employ a similarity function based on the longest common prefixes of strings, and we develop two families of join algorithms with sorted lists and compact tries, which explore different alternatives for the trade-off between space and time complexity. Then for a generalized case, when one string match multiple nodes in a taxonomy tree, we develop a new similarity function based on the maximum weighted matching on bipartite graphs. We show three C's: \textit{Constructive}, \textit{Compatible} and \textit{Consistent}, that our new measurement guarantees. To perform efficient string joins, given a query workload, we formulate an optimization problem to select the best parameters, aiming at maximum filtering power, under the filtering time constraints. We show the NP-hardness of the problem, and propose a probabilistically approximate algorithm to find the solution very efficiently. Finally, the extensive performance evaluations show that our algorithms can utilize the taxonomy to improve the effectiveness of string joins  and  scale very well with important parameters like data size and taxonomy size.
 
+%We study two  relevant problems for string similarity joins with
+%taxonomies: (1) how to measure the similarity between two strings with
+%taxonomies  and (2) how to perform efficient string joins with
+%taxonomies. To tackle the first problem, we develop a new measurement by extending the longest common
+%prefixes with maximum
+%weighted matching on bipartite graphs. We show three attractive
+%properties, called 3C's, \textit{Constructive}, \textit{Compatible}
+%and \textit{Consistent}, that our new measurement guarantees. Second,
+%to support the efficient string joins, we present a filter,  called
+%\textit{Semantics-Similar filters}, to prune away irrelevant pairs
+%effectively. Our technical contribution here is to develop an adaptive
+%sampling algorithm, which judiciously select a small set of strings
+%based on the hardness of join data, to maximize the filtering power,
+%under the filtering time constraints.  The extensive performance
+%evaluations show that our algorithms can utilize taxonomies to improve
+%the effectiveness of string joins  and  scale very well with important
+%parameters like data size and taxonomy size.
+
+
+The starting point of this paper is to investigate a special case
+where any string matches only one node in a taxonomy tree.  Based on  similarity functions with the longest common prefixes, we
+propose a worst-case optimal join algorithm by using an extended trie
+structure, running within the linear cost bound of the input and output data.
+Then we move to a  general scenario where one string can match
+multiple nodes in a taxonomy tree. To this end, we define  new similarity functions by
+extending longest common prefixes with maximum matching on bipartite
+graphs.  We develop a similarity join algorithm with a novel filter, called Semantics-Similar Filters (SSF), to prune
+away irrelevant pairs effectively. One technical challenge in this filter is to judiciously select the filtering similarity threshold to maximize the filtering power. We prove that  this problem in general is NP-hard.  We develop an efficiently adaptive
+sampling algorithm, which judiciously select a small set of strings
+based on the hardness of join data, to maximize the SSF's filtering power,
+under the filtering time constraints.  The extensive performance
+evaluations show that our algorithms can utilize taxonomies to improve
+the effectiveness of string joins  and  scale very well with important
+parameters like data size and taxonomy size.
+
+
+
+
+%If a string matches only one node in a taxonomy tree, we employ the longest common prefix (LCP) of two nodes in a taxonomy tree to measure their similarity and develop two families of join algorithms with sorted lists and compact tries, which explore different alternatives for the trade-off between space and time complexity. Then for a generalized case, when a string matches multiple nodes in a taxonomy tree,
 
 % We show three interesting properties, called the three C's: \textit{Constructive}, \textit{Compatible} and \textit{Consistent}, that our new measurement guarantees.  We develop a set of new algorithms to perform the efficient string similarity joins based on different index structures, including sorted lists, compact tries and LS-trees, which explore different alternatives for the trade-off between space and time complexity. Given a query workload, we formulate an optimization problem
 %which chooses the best parameters, aiming at maximum filtering power, under the filtering time constraints. We show the NP-hardness of the problem, and propose a space-efficient approximate algorithm to find the solution very efficiently.
@@ -135,8 +169,6 @@ In this paper,  we study how to measure the similarity between two strings with 
 
 \input{introduction}
 
-\input{relatedwork}
-
 %\input{preliminaries}
 
 \input{stringjoins}
@@ -149,16 +181,18 @@ In this paper,  we study how to measure the similarity between two strings with 
 
 %\input{extension}
 
+
 \input{experiments}
 
-
+\input{relatedwork}
 
 \input{conclusion}
+
 
 
 \bibliographystyle{abbrv}
 \bibliography{localrefs}
 
-
+\input{appendix}
 
 \end{document}

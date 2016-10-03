@@ -1,74 +1,37 @@
 \section{Related work} \label{sec:relatedwork}
 
- Taxonomy is the practice and science of classification. Many taxonomies have a hierarchical structure, but this is not a requirement. In this work, we study to leverage the existing taxonomy to improve the accuracy of string  joins in databases. Such a taxonomy could be constructed manually
-through experts and community efforts, as in WordNet [4], Cyc [14], and Freebase. With the advantage of freshness
+We now discuss previous works related to string similarity joins with taxonomy.
+
+\noindent \textbf{Taxonomy and construction}  ~~ Taxonomy is the practice and science of classification. Many taxonomies have a hierarchical structure, but this is not a requirement. In this work, we study to leverage the existing taxonomy to improve the accuracy of string  joins in databases. Such a taxonomy could be constructed manually
+through experts and community efforts, as in WordNet \cite{books/fellbaum1998wordnet} and Freebase \cite{conf/aaai/BollackerCT07}. With the advantage of freshness
 and informativeness, automatic taxonomy construction has
-been extensively studied recently, for example, in [20, 22,
-1]. WikiTaxonomy [18] and YAGO [22] may be the most notable efforts, which attempt to derive a taxonomy from Wikipedia categories. In the following, we discuss other related works about similarity functions and similarity join algorithms. 
+been extensively studied recently, for example, in WikiTaxonomy \cite{conf/ecai/PonzettoS08} and YAGO \cite{conf/cidr/MahdisoltaniBS15}  may be the most notable efforts, which attempt to derive a taxonomy from Wikipedia categories.
 
-\cite{journals/vldb/MartinenghiT14} propose a conservative extension of the relational algebra for the taxonomy in which special operators allow the specification of relaxed queries over vaguely structured information.
+\smallskip
 
-\cite{conf/sigmod/DingWJHW12}  study how to efficiently process a keyword query whose substitutes are defined by a given taxonomy.
+ %This paper focuses on exploiting taxonomy information to
+%enrich data used for string joins. To the best of our knowledge, it is the first attempt to integrate taxonomies into string similarity joins.
 
-Taxonomies are is-a hierarchies of concepts, topics, or keywords. Since they represent ontology specializations, they may be
-used to provide meaningful knowledge representations and, thus, support users in understanding the semantic meaning of a
-resource and the related domain.
-Several efforts to integrate taxonomies in the Data mining and Knowledge Discovery (KDD) process have been done. For
-instance, taxonomies have already been exploited to (i) discover high level correlations among data [9¨C13], (ii) perform textual
-data analysis and summarization [14,15,35,36], (iii) improve user browsing by looking into the results of Web search engines
-[37], and (iv) enhance the quality of recommendation systems [17,38]. This paper focuses on exploiting taxonomy information to
-enrich data used for classification. To the best of our knowledge, it is the first attempt to integrate high level and multi-faceted
-knowledge into classifier construction.
 
-\noindent \textbf{Similarity functions} In recent years, we have witnessed the emergence of various efforts to enhance the effectiveness of string similarity joins by using synonyms \cite{conf/sigmod/LuLWLW13,conf/icde/ArasuCK08,conf/cpm/BarbayGMR06,conf/vldb/ArvindSR09}.
-The traditional similarity functions consider only syntactic similarities, e.g., number of common
-words or $q$-grams. But there are many important cases where syntactically different
-strings can represent the same real-world object. For example,
-``\textsf{Bill}'' is a short form of ``\textsf{William}'', and ``\textsf{ICDE}'' is an abbreviation of  ``\textsf{International Conference on Data Engineering}''.  Given two collections of strings,  synonym-based similarity functions can utilize the available synonyms to find string pairs which are semantically similar. While those methods improve the effectiveness of string joins, a synonym dictionary does not contain information such as
-``\textsf{Helsinki is the capital of Finland}'', or `\textsf{`Apple 6 Plus is a new model of iPhone}''. Still, term pairs such as ``\textsf{Helsinki}'' and ``\textsf{Finland}'', ``\textsf{Apple 6 Plus}'' and ``\textsf{iPhone}''  have strong semantic correlations.
+
+ %Taxonomies have already been exploited to (i) keyword search \cite{conf/sigmod/DingWJHW12,journals/vldb/MartinenghiT14} , (ii)textual
+%data analysis and summarization [14,15,35,36], (iii) query relaxation on structured data
+%\cite{journals/vldb/MartinenghiT14}, and (iv) enhance the quality of recommendation systems [17,38].
+
+\noindent \textbf{String similarity functions} ~~ There is a rich set of string similarity measures including Jaro-Winkler distance, Levenshtein Distance,  Jaccard similarity, Overlap coefficient, and Hamming distance. A comparison of many string similarity functions is performed in \cite{conf/ijcai/CohenRF03}. Note that these metrics can only measure syntactic similarity (or distance) between two strings, but cannot capture semantic information. In this paper, we propose new similarity functions to compare data with semantics-based knowledge (i.e., a set of IS-A hierarchies).
+
+
+String semantic similarity \cite{conf/cikm/SayedHZ07,conf/cl/WuP94,journals/jair/Resnik99}, which has been studied in some fields as natural language processing (NLP) and artificial intelligence (AI), is defined over a set of documents or terms. The semantic relatedness (such as, latent semantic analysis \cite{conf/cscl/LandauerD02},  pointwise mutual information \cite{conf/pkdd/Schneider05} )  between units of language (e.g., words, sentences) can be estimated using statistical means such as a vector space model to correlate words and textual contexts from a suitable text corpus. In this paper, we study string semantics from the views of data management by proposing efficient join algorithms with taxonomy knowledge.
+
+ %The existing semantic functions can be classified to single-word level and multiple-words level. For the single-word level, computationally, semantic similarity can be estimated by defining a topological similarity, by using ontologies to define the distance between terms/concepts. For example, a naive metric for the comparison of concepts ordered in a partially ordered set and represented as nodes of a taxonomy tree, would be the shortest-path linking the two concept nodes.  For the multiple-words level, it can be grouped into two categories:  (1) those that view a text as a combination of words and calculate the similarity of two texts by aggregating the similarities of word pairs across the two texts, and (2) those that model a text as a whole and calculate the similarity of two texts by comparing the two models obtained. Approaches in the first category search for pairs of words across the two texts that maximize similarity and compute the overall similarity by aggregating individual similarity values, either by exploiting large text corpora [96], [26], [97], [98] and [99], or thesauri [100], sometimes also taking into account the word order in the text [101]. In this paper, we propose a new similarity function following the first line. The second category usually involves transforming texts into vectors and computing the similarity of texts by comparing their corresponding vectors. Vector space models [21] are an early example of this category, an idea borrowed from Information Retrieval. The initial models mainly focused on the representation of larger pieces of text, such as documents, where a text is modeled on the basis of the frequency statistics of the words it contains. Such models, however, suffer from sparseness and cannot capture similarities between short text pairs that use different wordings. A more suitable vector representation for shorter textual items is one that is based on semantic composition, and that seeks to model a text by combining the representations of its individual words [102]. A thorough study and comparison of different compositionality strategies is provided in [103], [104] and [105]. Recently, an approach mixing distributional information and explicit knowledge has been successfully applied to cross-lingual document retrieval and categorization [106].
 
 
 
 
 
+\smallskip
 
+\noindent \textbf{String similarity joins}  There has been much recent work and progress on efficient string similarity joins  \cite{conf/sigmod/LuLWLW13,conf/icde/ArasuCK08,conf/cpm/BarbayGMR06,conf/vldb/ArvindSR09} and most of them follow the filter-and-verification framework. 
 
-\noindent \textbf{Similarity joins}  Several types of Similarity Join have been proposed in the
-literature, e.g., distance range join (retrieves all pairs whose distances
-are smaller than a predefined threshold $\varepsilon$) [2, 3, 4, 5, 6,
-7], k-Distance join (retrieves the k most-similar pairs) [8], and
-kNN-join (retrieves, for each tuple in one table, the k nearest neighbors
-in another table) [9, 10, 11]. The distance range join
-has been one of the most studied and useful types of Similarity
-Join. This type of join is commonly referred to simply as Similarity
-Join and is the focus of this paper. Among its most relevant
-implementation techniques, we find approaches that rely
-on the use of pre-built indices, e.g., eD-index [3], D-index [4],
-and List of Twin Clusters (LTC) [12]. These techniques strive
-to partition the data while clustering together the similar objects.
-While these indexing techniques support the SJ operation
-they also have some shortcomings: D-index and eD-index may
-require rebuilding the index to support queries with different $\varepsilon$,
-
-Approximate string matching includes finding (sub)strings
-that resemble a given query string. It is a well-researched
-topic and has many applications, such as data cleansing [1],
-spelling correction [19], query autocompletion [33], near duplicate
-detection [25, 32], approximate named entity recognition
-[29], and bioinformatics [20, 27, 35].
-Due to the sheer amount of literature in this area, we will
-focus on most related recent results and refer readers to the
-excellent surveys [13, 22] and tutorials [3, 12, 16] for a comprehensive
-treatment of the topic.
-Based on the types of the queries, recent work focuses either
-on efficient single query processing (typically named string
-similarity queries) [1, 6, 9, 11, 18, 25, 28, 31], or the similarity
-join which can be treated as processing a batch of similarity
-queries [2, 8, 10, 12, 14, 17, 28, 29, 34, 35]. Most recently,
-Jiang et al. [15] experimentally evaluate and analyze many of
-the existing similarity join algorithms.
-
-
-
-
-
+Finally, in recent years, there is the emergence of various efforts to enhance the effectiveness of string similarity joins by using synonyms \cite{conf/sigmod/LuLWLW13,conf/icde/ArasuCK08,conf/cpm/BarbayGMR06,conf/vldb/ArvindSR09}.
+ Given two collections of strings,  synonym-based similarity functions can utilize the available synonyms to find string pairs which are semantically similar. While those methods improve the effectiveness of string joins, a synonym dictionary does not contain information such as `\textsf{`Apple 6 Plus is a new model of iPhone}''. Still, term pairs ``\textsf{Apple 6 Plus}'' and ``\textsf{iPhone}''  have strong semantic correlations. This paper pushes the research frontier forward by studying the joins with another common type of semantics: taxonomies.

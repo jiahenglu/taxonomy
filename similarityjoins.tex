@@ -1,45 +1,86 @@
 
-\section{Generalized taxonomy similarity}
+\section{Generalized taxonomy based join
+	
+	
+	}
 
-We now turn to a general case when one string can match multiple nodes in the taxonomy tree. In this section,  we first describe three key properties that a new function should guarantee and then we describe a new similarity function and the corresponding algorithm.
-
-
-
-\subsection{Properties for new functions}
-
-We define a new similarity function, which has the following three properties, called the three C's features:
-
-(1) \textbf{Constructive }:  The new similarity is always greater than the one without considering the taxonomy. That is, using taxonomy  cannot decrease the similarity between strings in all cases; $f(S,T,\mathcal{T} ) \geq  f(S,T) $
-
-(2) \textbf{Compatible}. When the taxonomy is updated with the insertion of the elements, the similarity always increases. That is, the similarity is upward compatible; $f(S,T,\mathcal{T} ) \leq  f(S,T, \mathcal{T'}) $ if $\mathcal{T}$ contains more elements than $\mathcal{T'}$.
-
-(3) \textbf{Consistent}, Given two sets of tokens: S=\{$s_1,s_2,...s_n$\} and T=\{$t_1,t_2,...,t_m$\}, the maxim TS similarity between $s_i$ and $t_j$ is max, and the minimum is min. Then $ min \leq f(S,T,\mathcal{T} ) \leq max $. That means, the final similarity is consistent with the similarity of two single elements.
-
-\subsection{Generalized taxonomy functions}
+We now turn to a general case when one string  matches multiple nodes in a taxonomy. Specifically, we first propose a generalized similarity function  which naturally extends the previous TS function, and then we show three attractive properties that this new function guarantees, and finally we study how to perform the efficient string join based on this function.
 
 
-\begin{definition} [Weight functions] Given two strings $S_1$ and $S_2$ and a taxonomy $T$, the weight function w: $S \times T \rightarrow R$ is defined by $w(s_i, t_j,T)$ = $TS(s_i,t_j,T)$, where $s_i \in S$ and $t_j \in T$.
-\end{definition}
 
-\begin{definition} [Maximum Similarity Matching] Given two strings $S$ and $T$ and a taxonomy $\tau$, the weight function w: $S \times T \rightarrow R$, find a matching of maximum weight $W$ where the weight of matching $M$ is given by $w(M)$ = $\Sigma_{e \in M} w(e)$.
-\end{definition}
+\subsection{Generalised similarity functions}
 
-\begin{definition} [Extended taxonomy similarity] Given two strings $S$ and $T$ and a taxonomy $\tau$, the similarity is   $\frac{W(S,T,\tau)}{max(|S_1|,|S_2|)}$, where $W(S,T,\tau)$ denotes that the value of the maximum weight matching.  \label{def:efs}
+Given two strings, each of which can match multiple nodes in a
+taxonomy, to measure the similarity between these two strings, we
+extend the previous function by using maximum similarity matching in a bipartite
+graph. Intuitively, see Figure , where each string contains multiple substring to match nodes in a taxonomy. And there is the similarity of two nodes in two strings can measure with TS function. Then the overall similarity can be naturally measured with the maximum similairty matching in a bipartite graph, formally defined as follows.   
+
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[scale=0.4]{figures/bipartite}
+	\caption{Illustration to the maximum matching in bipartite graphs}
+	\label{fig:bipartite}
+\end{figure}
+
+Based on the previous similarity function TS, we propose a new similarity function as follows:
+
+\begin{definition} [Weight functions] Given two tokens (words) $s_i$ and $t_j$ and a taxonomy $\mathcal{T}$, the weight function $w$: $s_i \times t_j \rightarrow \mathcal{R} $ is defined by $w(s_i, t_j, \mathcal{T})$ = $TS(s_i, t_j, \mathcal{T})$.
+\label{def:weightfunction}\end{definition}
+
+\begin{definition} [Maximum Similarity Matching] Given a taxonomy $\mathcal{T}$ and two strings $s$ and $t$, for each tokens $s_i \in s$ and $t_j \in t$, there is a weight function $w$: $s_i \times t_j \rightarrow \mathcal{R}$. A maximum similarity matching  $M$ is defined as a matching where the sum of weight functions $w(s_i, t_j, \mathcal{T})$ for all distinct pairs ($s_i$, $t_j$) have a maximal value.  \label{def:maximum similaritymatching}
 \end{definition}
 
 \smallskip
 
-\begin{lem}  The ETS function is constructive, compatible and consistent.
-\end{lem}
-\begin{proof} Because the answer is based on the maximum weighted function so the constructive and compatible is easy to prove. In order to prove the consistent.
-\end{proof}
+Note that the distinct match means that all $s_i$ should be different in $s$, so this is similar to the maximum matching in a bipartite graph.
+
+\smallskip
+
+
+\begin{definition} [Generalised taxonomy similarity] Given two strings $s$ and $t$ and a taxonomy $\tau$, the similarity denoted by GTS($s$,$t$,$\tau$) =   $\frac{W(s,t,\tau)}{max(|s|,|t|)}$, where $W(s,t,\tau)$ is the weight of the maximum similarity matching $M$.  \label{def:efs}
+\end{definition}
+
+\smallskip
+
+\begin{example} Consider two strings ``\textsf{Riverside California}'' and ``\textsf{Cupertino US}'', the maximal matching is  TS(Riverside,Cupertino) = 0.8, TS(California,US)=0.75,  0.8+0.75=1.55; Therefore, the similarity is 1.55/2=0.775. \label{exp:TS}
+\end{example}
+
 
 The maximum  similarity  matching is computed by the maximum weight matching in bipartite graphs. The weight is calculated by the binary similarity of any two elements.
 
-The algorithm of the maximum weight matching in bipartite graphs is called the Hungarian method. The time analysis of the algorithm is $O(n^3)$.
+The algorithm of the maximum weight matching in bipartite graphs is called the Hungarian\cite{journals/JSIAM/Munkres57}. The time analysis of the algorithm is $O(n^3)$.
 
 
 Therefore, the  time analysis for the overall cost to compute two strings is $O(n^3+m^2)$, where $m$ is the sum of the length of prefix labels of words in two strings.
+
+\subsection{Properties for new functions}
+
+We emphasize that the new similarity function illustrated in the previous subsection has three attractive properties, called 3C's, \textbf{Constructive}, \textbf{Compatible} and \textbf{Consistent}, which are described in the following.
+ 
+
+\smallskip
+
+Property 1: \textbf{Constructive}.  The utilization of taxonomies is constructive to the similarity between $s$ and $t$; that is, $GTS(s,t,\mathcal{T} ) \geq  GTS(s,t, \varnothing)$, where $\varnothing$ denotes an empty taxonomy.
+
+\smallskip
+
+Property 2: \textbf{Compatible}. The similarity is upward compatible with the insertion of new leaf nodes in a taxonomy tree. Let $\mathcal{T}'$ denote a new taxonomy, then $GTS(S,T,\mathcal{T} ) \leq  GTS(S,T, \mathcal{T'}) $.
+
+\smallskip
+
+Property 3: \textbf{Consistent}. Let $s_i$ and $t_j$ denote any two tokens in $s$ and $t$ respectively. The GTS similarity between $s$ and $t$ falls in the range of the minimum and maximam similarity TS between any  two tokens  $s_i$ and $t_j$, that is,  $  GTS(s,t,\mathcal{T} ) \in [min,max] $. That means, the global similarity is consistent with the local similarity of any two tokens in strings.
+
+\smallskip
+
+\begin{lem}  The GTS function is constructive, compatible and consistent. \label{lem:three_properties}
+\end{lem}
+
+
+The formal proof of these three properties is provided in Appendix. Here we exemplify it using the following example.
+
+\begin{example} We revisit two strings instances in Example \ref{exp:TS} to illustrate three properties. It is easy to understand constructive and compatible, as  two strings ``\textsf{Riverside California}'' and ``\textsf{Cupertino US}'' have no common tokens, so their syntactic similarity like Jaccard is zero and the enlargement of the taxonomy tree cannot reduce the similarity. Finally, for consistent,   TS(Riverside,Cupertino) = 0.8, TS(California,US)=0.75,  0.8+0.75=1.55; and GTS(``\textsf{Riverside California}'', ``\textsf{Cupertino US}'')=0.775, which $< 0.8$ and   $> 0.75$.
+\end{example}
 
 
 
@@ -56,104 +97,95 @@ Therefore, the  time analysis for the overall cost to compute two strings is $O(
 \end{figure}
 
 
-\begin{figure}
+
+\begin{figure}[t]
 \centering
-\includegraphics[scale=0.4]{figures/sketch02}
- \caption{Illustration to Bit-min sketches }
-\label{fig:similaritygeaph}
+\includegraphics[scale=0.7]{figures/filterExample}
+ \caption{A filter example}
+\label{fig:filterexample}
 \end{figure}
 
-A naive algorithm to compute similarity join is the nested loop join to compare every pair of records. This method is obviously prohibitively expensive for large data sets. Efficient algorithms exists by following the ``filtering and verification'' framework, that is,given two collections of strings, one or multiple filters are utilized to prune away many record pairs and then the verification is involved for the remaining pairs after filtering. Clearly, the stronger filtering power, the better performance of the algorithm, because the computation of similarity between two sets are really expensive by the Hungarian algorithm. We develop two filters as follows.
+Given a generalised similarity function, it is imperative to design an efficient similarity join algorithms. Unfortunately, it is infeasible to straightforwardly extend the join algorithm presented in the previous section, because  the difficulty is that each string may contain multiple nodes, and thus the results  do not admit the locality sensitiveness which is required in the sorting lists and extended tries.  Therefore, we turn to follow the well-known ``filtering and verification'' framework, which includes two steps: (1) Filter step: devising effective filtering algorithms to prune large numbers of dissimilar pairs and generating a set of candidate pairs; and (2) Verification step: verifying each candidate pair by computing
+the real similarity and outputting the final results. Since the verification is a time-consuming step,  filtering algorithms play an important role in this framework.
 
-\begin{lem} [\textbf{Length filter}] Given two sets of tokens $S$ and $T$ and a threshold $\theta$, without loss of the generality, assume that $|S| < |T|$,  if $ETS(S,T) > \theta$. then $|S|> \theta |T|$,
+Several techniques have been proposed in the literature to perform
+filter step for similarity string joins, to name a few, including  count filtering \cite{conf/vldb/GravanoIJKMS01}, length filtering \cite{conf/vldb/ArasuGK06}, position filtering \cite{conf/esa/SutinenT95} and prefix filtering \cite{conf/sigmod/WangLF12}, etc. In this paper, we extend count filters by proposing a new filter called\textit{Semantics-Similar} filters (SS-filters). Count filters assume that two strings are similar only if they share enough number of common tokens. But this assumption does not hold in our setting. For example, consider two strings ``\textsf{Cupertino, US}'' and ``\textsf{California}'', which share no common tokens, but  they are ``similar'' in the sense that both refer to ``\textsf{California}''.   Our key observation is that \textit{two strings are similar if they share enough number of ``Semantics-Similar'' (not the same) tokens}. Recall the above example, where ``\textsf{California}'' is semantics-similar to both ``\textsf{Cupertino}'' and ``\textsf{US}'' (based on the taxonomy tree in Figure \ref{fig:toytaxonomyexample}).
+
+
+\smallskip
+
+\begin{lem} [\textbf{Semantically Similar filters}] Given two strings $S$ and $T$,  If $GTS(S,T) > \theta$,  then there are at least $\tau$ distinct pairs of elements ($s_i, t_j$) in  $S$ and $T$ such that each $TS(s_i, t_j) > \frac{\theta |T| - \tau +1}{|S|- \tau +1} $. \label{lem:psimilarity}
+\end{lem}
+
+\smallskip
+
+
+\begin{corollary} [\textbf{$\tau$-$\varphi$ thresholds}] Given two strings $S$ and $T$, If $ETS(S,T) > \theta$, then there are at least $\tau$ distinct pairs of elements ($s_i, t_j$) in  $S$ and $T$ such that each $TS(s_i, t_j) > \varphi$, where $\varphi = \frac{\theta |S| - \tau +1}{|S|-\tau+1} $. \label{cor:threshold}
+\end{corollary}
+
+\smallskip
+
+Based on Lemma \ref{lemma:sortjoinlength}, we can generate all possible substring with $\tau$ and  $\varphi$.
+
+\begin{lem} [\textbf{Length filter}] Given two strings $s$ and $t$ and a threshold $\theta$, if $GTS(s,t) > \theta$. then $min(|s|,|t|) > \theta \cdot max(|s|,|t|)$,
 
 \end{lem}
 
 \smallskip
 
-\begin{lem} [\textbf{Similarity filter}] Given two sets $S$ and $T$. If $ETS(S,T) > \theta$, without the loss of generality, assume that $|S|<|T|$. If $ETS(S,T) > \theta$,  then there are at least $p$ distinct pairs of elements ($s_i, t_j$) in  $S$ and $T$ such that each $TS(s_i, t_j) > \frac{\theta |T| - p +1}{|S|-p+1} $. \label{lem:pthreshold}
-\end{lem}
+\begin{algorithm}
+	{\bf Input}: a collection of strings $S$ and $\tau$ \\
+	{\bf Output}: inverted lists of $S$
+	\begin{compactenum}[(1)]
+		\item {\bf FOR EACH} $s \in S$ {\bf DO}
+		\item ~~ Compute $\varphi$ by Corollary \ref{cor:threshold}
+		\item ~~ Get each prefix $p_i$ with $s$ with the length $ \geq \lceil \varphi |s| \rceil$
+		\item ~~ Assume that the string id of $s$ is $x$
+		\item ~~  Add the pair  $(x,s)$  to the inverted list of each $p_i$
+	\end{compactenum}
+	\caption{Index building on strings}
+	\label{alg:indexBuilding}
+\end{algorithm}
+
+
+
+
+
+
 
 \smallskip
 
+\begin{example} See the example in Figure \ref{fig:filterexample}, we can use the length filter to prune away (s1,t1) and (s2,t2) pairs. We can use the P-similarity to discard (s1,t2), p=1, because by Lemma \ref{lem:psimilarity}, we need at least one pair whose similarity $> 0.8*2/2 = 0.8$. But the maximum simialrity is only 0.5 between s1 and t2. Futher, we cam use p-similarity with p=2 to discard s2,t1, because by Lemma \ref{lem:psimilarity}, we need at least two distinct pairs whose similarity $> (0.8*2-2+1)/(2-2+1)$=0.6. But we cannot find two pairs to satisfy this threshold. Therefore, all four pairs can be pruned away with these two filters.
 
+ We generate the inverted list for each token in S nd T. In this case, $\theta$=0.8, for p=1 and $\theta$=0.6 for p=2. But their inverted lists are all the same. When we merge using p=1. Note that 4 is the overlapping token, So the pair (s2,t1) is the only candidate. But if we use p=2, there is only one token, so it is not a candidate. In this way, p-similarity can filter away all candidates.
+\end{example}
+
+To avoid the time-consuming operations, i.e., checking the size of two sets and the number of their similar pairs for each string pair to find the candidate, we generate a new index structure called Length-Similarity tree (LS-tree), which has two levels: the nodes  in the first level contain two fields <$l,p$>, where $l$ is an integer to denote the size of each set, and p is a pointer to a compact trie. For example, the LS-tree in Figure is built for
 
 \begin{algorithm}
 {\bf Input}: two collections of strings $S_1$ and $S_2$,  a threshold $\theta$ \\
-{\bf Output}: string pairs $(s_1,s_2) \in S_1 \times S_2$, s.t. $TS(s_1, s_2) > \theta$
+{\bf Output}: string pairs $(s_1,s_2) \in S_1 \times S_2$, s.t. $GTS(s_1, s_2) > \theta$
 \begin{compactenum}[(1)]
-\item Let $T_1$ and $T_2$ denote two LS tree for $S_1$ and $S_2$ respectively.
-\item Initialize two cursors in two tries.
-\item {\bf WHILE} $\neg end(T_s) \wedge  \neg end(T_t)$ {\bf DO}
-\item  ~~ $min$ = $\arg\min_{i}$($cur(C_i^1)$); $max$ = $\arg\max_{i}$($cur(C_i^1)$)
-\item  ~~ {\bf IF} (possibleMatch(cur($T_{min}$),cur($T_{max}$))) {\bf THEN}
-\item ~~ ~~ {\bf  IF} ($T_{min}$ is a real element)   {\bf THEN} Find(cur($T_{min})$,cur($T_{max}$))
- \item ~~~~ advance($T_{min}$)
- \item ~~ {\bf ELSE} Jump($T_{min}$)
- \item ~~ advance($T_{min}$)
+\item  {\bf FOR EACH} $\tau$ {\bf DO}
+\item  ~~ ~~ {\bf FOR} ( $\forall g$ is an overlapping token in $t_1$ and $t_2$) {\bf DO}
+\item  ~~ ~~ $L_1 = t_1 \rightarrow$ getList(g);
+\item  ~~ ~~ $L_2 = t_2 \rightarrow$ getList(g);
+\item  ~~ ~~ Let $C$ denote all pairs $\{(s,t)| s \in L_1, t\in L_2$ \}
+\item  ~~  $D = D \cup C$
+\item  ~~  Let all $\tau$-occurrence pairs  in D to be $P \subseteq D$.
+\item   $A = A \cap P$
+\item Verify the similarity for all candidates in $A$ and output
 \end{compactenum}
-\smallskip
-\textbf{Function} possibleMatch($s_1$,$s_2$)
-\begin{compactenum}[(1)]
-\item  $x = LCP(s_1,s_2)$
-\item {\bf IF}  $(x > \theta \cdot min (s_1, s_2 )$  {\bf THEN} RETURN TRUE
-\item   ~~ {\bf ELSE} FALSE
-\end{compactenum}
-\smallskip
-\textbf{Procedure} Jump($T$)
-\begin{compactenum}[(1)]
-\item  read the next element that is not a descendant with the depth-first traversal
-\end{compactenum}
-\smallskip
-\caption{String joins with LS trees}
+\caption{String joins with SS-filters}
 \label{alg:LSTreeJoin}
 \end{algorithm}
 
 
-To avoid the time-consuming operations, i.e., checking the size of two sets and the number of their similar pairs for each string pair to find the candidate, we generate a new index structure called Length-Similarity tree (LS-tree), which has two levels: the nodes  in the first level contain two fields <$l,p$>, where $l$ is an integer to denote the size of each set, and p is a pointer to a compact trie. For example, the LS-tree in Figure is built for
 
-%\textbf{Signature filter}. Given a string s with length $|s|$, then the size of signature is $\lceil (1-\theta)|s| \rceil$. But if the signatures involve the taxonomy, then we cannot make this argument.
-%
-%But if in some real cases, we select the word from taxonomy as signatures. Therefore we need to compute a relax maximum similarity. In this case, we still do not need to retrieve the whole string to compute real similarity.
-%
-%
-%In the literature, the current "modus operandi" is called \textit{prefix filter}, which is based on the intuition that if two canonicalized records are similar, some fragments of them should overlap with each other, as otherwise the two records
-%won't have enough overlap. This intuition can be formally captured by the prefix-filtering
-%principle \cite{conf/icde/ChaudhuriGK06} rephrased below.
-%
-%\begin{lem} (\textsc{Prefix filter principle}) \cite{conf/icde/ChaudhuriGK06} Given an
-%ordering $O$ of the token universe $U$ and two strings $s$ and $t$, each with tokens sorted in the
-%order of $O$.   If Jaccard($s, t$) $> \theta$, then the first $\lceil(1-\theta)|s|\rceil$ smallest
-%tokens of $s$ and the first $\lceil(1-\theta)|t|\rceil$ smallest
-%tokens of $t$  must share at least one token.
-%\end{lem}
-%
-%But this method cannot be used in our case of similarity. We need to develop a new method to produce the signature.
-%
-%Given one set with the expansion \{$n_1$,$n_2$,...,$n_t$\}, we sort it first by the decreasing order of the string. If the two strings are the same length, then by the increasing order of lexicographical order. In this way, we ensure that the node with high selectivity is always selected.
-%
-%Then if there is no elements for $n_i$ $ i \in $ 1 to $n$, what is the maximal intersection results.
-%
-%For example, consider a string set \{1.3, 1.4.1, 2.1\}. Then we produce the full set \{1, 1.3, 1.4, 1.4.1, 2, 2.1\}. We sort it according to the above order: \{1.4.1, 1.3, 1.4, 2.1, 1, 2\}.
-%
-%Without 1.4.1, the maximal intersection size is $2\frac{2}{3}$;
-%
-%Without 1.4.1 and 1.3, the maximal intersection size is $\frac{1}{2}+1+\frac{2}{3}$=$2\frac{1}{6}$;
-%
-%Without 1.4.1, 1.3, 1.4, the maximal intersection size is $1+\frac{1}{2}+\frac{1}{3}$=$1\frac{5}{6}$; It is important to note that we should use the double 1 here. so this is not a problem of maximal weight matching. We can the greedy match for this case.
-%
-%Without 1.4.1, 1.3, 1.4 and 2.1, the maximal intersection size is $\frac{1}{2}+\frac{1}{2}+\frac{1}{3}$=$1\frac{1}{3}$;
-%
-%Without 1.4.1, 1.3, 1.4, 2.1 and 1, the maximal intersection size is $\frac{1}{2}$;
-%
-%Without 1.4.1, 1.3, 1.4, 2.1, 1 and 2, the maximal intersection size is $0$;
-%
-%It is very important to note that we use the greedy algorithm to compute the maximal intersection number.
-%
-%After that, we select the maximal number which is greater than $\theta \cdot |s|$ as the signature set.
-%
-%\subsubsection{Composite signature scheme}
 
+
+\begin{theorem} Given two collections of nodes and a threshold $\theta$, Algorithm \ref{alg:LSTreeJoin} correctly finds all pair $n_1$ and $n_2$ such that $GTS(n_1,n_2) > \theta$.
+\end{theorem}
 
 %
 %
@@ -186,127 +218,6 @@ To avoid the time-consuming operations, i.e., checking the size of two sets and 
 %Given an
 %ordering $O = (U_1 , U_2 )$ of the token universe $U_1$ and $U_2$, where $U_1$ denotes the set of non-taxonomy tokens and $U_2$ is the set of taxonomy tokens. Let $P_s$ denote the smallest $\lceil(1-\theta)|s|\rceil$ tokens.
 
-%\begin{lem} (\textsc{Prefix filter principle with taxonomy})  Given two strings $s$ and $t$ with n-ary prefix signatures, if TJ($s, t$) $\geq \theta$, then one of the following cases holds:
-%
-% \begin{itemize}
-%   \item $P_s \cap P_t \neq \emptyset$, or
-%   \item  $T_s \cap A_t \neq \emptyset$ or $T_t \cap A_s \neq \emptyset$
-% \end{itemize}
-%
-%\end{lem}
-%
-
-
-%\begin{lem} (\textsc{Prefix filter principle with taxonomy})  Given two strings $s$ and $t$ with n-ary prefix signatures, if TJ($s, t$) $\geq \theta$, then one of the following cases holds:
-%
-% \begin{itemize}
-%   \item $P_s \cap P_t \neq \emptyset$, or both of the conditions satisfy:
-%   \item  $\exists sig^s \in P_s, sig = sig^s_{token} \cup sig^s_{tax} s.t. \exists sig^t \supseteq sig^s$ and $sig^s_{tax} \subseteq Tax(t)$ and
-%    \item  $\exists sig^t \in P_t, sig = sig^t_{token} \cup sig^t_{tax} s.t. \exists sig^s \supseteq sig^t$ and $sig^t_{tax} \subseteq Tax(s)$
-% \end{itemize}
-%
-%\end{lem}
-
-%
-%\begin{table*}[t]
-%\centering
-%\begin{tabular}{|@{\hspace{1mm}}c@{\hspace{1mm}}|@{\hspace{1mm}}c@{\hspace{1mm}}|@{\hspace{1mm}}c@{\hspace{1mm}}|@{\hspace{1mm}}c@{\hspace{1mm}}|}
-%%{|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|}
-%%|c|m{6cm}|
-%\hline
-% \textbf{ID} & \textbf{Strings} &  \textbf{Signatures} &    \textbf{C-Sig} \\
-%  \hline \hline
-%
-%  $q_1$ & Suwon and Seoul in South Korea  &  (Suwon, and), (Suwon Seoul), (and, Seoul)  & (3.1.1.2, and), (3.1.1.2, 3.1.1.1), (and, 3.1.1.1) \\
-%
-%   $q_2$ & Seoul, South Korea in Asia  & (Seoul, South), (Seoul, Korea), (South, Korea) &   (3.1.1.1, 3.1), (3.1.1.1, 3.1), (3.1, 3.1) \\
-%
-%   $q_3$ &  two states: California and Michigan, U.S. &  (two, states), (two, California), (states, California) & (two, states), (two, 2.1.1), (states, 2.1.1)  \\
-%   $q_4$ & two cities: Detroit and Los angles & (two, cities), (two, Detroit), (cities, Detroit) &  (two, cities), (two, 2.1.2.1), (cities, 2.1.2.1) \\
-%
-%
-%  \hline
-%\end{tabular}
-%\caption{An example to illustrate the string similarity join algorithm}
-%\label{tab:example}
-%\end{table*}
-
-
-%\begin{example} We use Table as an example to illustrate the algorithm.
-%
-%\end{example}
-%
-%\subsubsection{Comparison with other schemes}
-%
-%
-%\begin{table}[t]
-%\centering
-%\begin{tabular}{|@{\hspace{1mm}}c@{\hspace{1mm}}|@{\hspace{1mm}}c@{\hspace{1mm}}|@{\hspace{1mm}}c@{\hspace{1mm}}|}
-%%{|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|}
-%%|c|m{6cm}|
-%\hline
-% \textbf{Methods@{}} & \textbf{Signature size} &  \textbf{Filtering power} \\
-%  \hline \hline
-%
-%  Prefix & (1 -$\theta$)$|s|$ & Optimal \\
-%
-%
-%   PartEnum & CPU:  O($1.2002^{|V|} \cdot |V|^{O(1)}$ ) & Optimal \\
-%
-%   LSH & CPU:  O($|V|$log$|V|$+$|E|$)  & $(2\bar{d}+3)/5$  \\
-%
-%   Composite Prefix & I/O: O(sort($|E|$+$|V|$))   & No bound \\
-%
-%
-%  \hline
-%\end{tabular}
-%\caption{Time and  I/O cost and performance}
-%\label{tab:complexity}
-%\end{table}
-%
-% We compare our composite prefix filter with state-of-the-art filters. The objective of the filters is to prune dissimilar strings as many as possible. They require to select a set of q-grams from each of two strings as signatures, denoted as Sig(r) and Sig(s), and compare the two q-gram sets to check whether they share common signatures. Pruning power and filtering cost are two important issues in designing filters.
-%
-%We first consider the pruning power. One one hand, the smaller the production size of the two signature sets $|Sig(r)| \times$
-%$|Sig(s)|$, the smaller probability they share common q-grams, and thus the higher pruning power. On the other hand, the number of matching q-grams cannot exceed the smaller signature size of the two strings, min($|Sig(r)|, |Sig(s)|$). Thus
-%we can use the production size of two signature sets and
-%the smaller signature set size to evaluate the pruning power. We then evaluate the filtering cost. As the q-gram sets
-%are sorted, we can use a merge-join algorithm to find the
-%matching q-grams if there is no index, the filtering cost depends on the sum of signature set sizes of the two strings,
-%$|Sig(r)|$ + $|Sig(s)|$. Table 3 compares the pruning power and filtering cost of state-of-the-art q-gram-based filters used in AllPair, ED-Join, Qchunk-IndexChunk and Qchunk-IndexGram.
-
-
-
-
-%
-%
-%\subsubsection{Composite signature: Performance}
-%
-%In this section, we cover various aspects of Composite-signature scheme's performance.
-%We begin by proving that it has good asymptotic performance: For a particular setting of n1 and n2, we can prove
-%that it provides good filtering effectiveness (i.e., generates only a few false positive candidate pairs) with few signatures per input set.
-%
-%\begin{theorem} If the Jaccard similarity of two strings are greater than $\theta$, then $Sig(u) \bigcap Sig(v) = \varnothing$ with probability 1-o(1). For this setting of parameters, the number of signature per string is O().
-%\end{theorem}
-%
-%
-%Given a $n$-tuple composite filter, we estimate its filtering effectiveness.
-%
-%We assume that there are $N$ tokens in all tables and the length of each string is $s$.
-%
-%The possibility of false positive for a string pair $s, t$ is that $P(E_A | E_B)$, $E_B$ means that  $sim(s,t) < \theta$; $E_A$ means that $s$ and $t$ pair cannot be pruned away with the filter.
-%
-%First consider the 1 prefix signature. We computer $P(E_A, E_B)$, that is, the prefix signature cannot prune away the pair of $Jaccard(s,t) < \theta$
-%
-%Let $\lambda$ = $(1-\theta)s$ signatures for $t$.
-%
-%Since $|s| = |t|$ and   $Jaccard(s,t) < \theta$ $\Longleftarrow$ $ |s \cap t| < |s| \cdot \theta$.
-
-%\subsection{Count-Min estimation}
-%
-%In order to quickly decide if the number of pairs after composite filters, we develop a count-min estimation to quickly determine which $n$ is good for filtering. See the following two examples for joins.
-%
-%See the example in Figure \ref{fig:signature_example1}. In this example, $\theta$ = 0.8. If we use the 1-element signature, then we cannot prune away any string pair. In signature 2, we use 2-element signature, then there is no candidate. Therefore, the filtering power is better.
-%
 %Further, when we consider the taxonomy ABCD ISA AGK, shown in Figure \ref{fig:signature_example1}. Then there is one answer pair (s1,t1). The new signature include the taxonomy ID 1.1 and 1  as shown.
 %
 %\begin{figure}[h]
